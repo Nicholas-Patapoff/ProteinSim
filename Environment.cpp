@@ -1,13 +1,12 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "class.h"
+#include "Env.h"
 
 Environment::Environment(std::string pdb){
     //Acoords.reserve(30000);
     std::fstream pdb_file;
     pdb_file.open(pdb, std::ios::in);
-    std::cout << "help!";
     if(pdb_file.is_open()){
         std::string temp;
         while(getline(pdb_file, temp)){

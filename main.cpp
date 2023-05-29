@@ -1,12 +1,15 @@
 #include <iostream>
 #include <fstream> 
 #include <string>
-#include "class.h"
+#include "Env.h"
 int main()
 {
 
-Environment PISUM_SATIVUM("8dn7.pdb");
-std::cout<< "helloookhukooo";
+Environment PISUM_SATIVUM("output.pdb");
+
+std::cout<< "Completed!" << std::endl;
+
+
 
 
 
