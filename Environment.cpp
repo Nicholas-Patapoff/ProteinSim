@@ -4,7 +4,6 @@
 #include "Env.h"
 
 Environment::Environment(std::string pdb){
-    //Acoords.reserve(30000);
     std::fstream pdb_file;
     pdb_file.open(pdb, std::ios::in);
     if(pdb_file.is_open()){
@@ -12,14 +11,16 @@ Environment::Environment(std::string pdb){
         while(getline(pdb_file, temp)){
             //std::cout << temp << std::endl;
             if(temp.substr(0,4) == "ATOM"){
-                append_name(temp.substr(12, 16));
-                append_residue(temp.substr(17, 20));
-                append_coords(temp.substr(30,38),temp.substr(38, 46),temp.substr(46, 54));
-                std::cout << "atom!" << std::endl;
-            }
+                append_name(temp.substr(13, 4));
+                append_residue(temp.substr(18, 2));
+                append_coords(temp.substr(31,8),temp.substr(39, 8),temp.substr(47, 8));
+                std::cout << "atom!" << std::endl;            }
             else if(temp.substr(0, 6) == "HETATM"){
+                append_Hname(temp.substr(13, 4));
+                append_Hresidue(temp.substr(18, 2));
+                append_Hcoords(temp.substr(31,8),temp.substr(39, 8),temp.substr(47, 8));
                 //class name.HETATM.append(string)
-                std::cout << "hetatm!" << std::endl;
+                //std::cout << "hetatm!" << std::endl;
             }
         }
     }
