@@ -159,7 +159,41 @@ parm::parm(std::string parm7file){
                     LENNARD_JONES_BCOEF.push_back(value);
                 }
             }
-
+            else if(current_flag == "BONDS_WITHOUT_HYDROGEN" && temp.substr(0,7) != "%FORMAT" && temp.substr(0,5) != "%FLAG"){
+                int value;
+                std::istringstream line(temp);
+                while(line >> value){
+                    BONDS_WITHOUT_HYDROGEN.push_back(value);
+                }
+            }
+            else if(current_flag == "ANGLES_INC_HYDROGEN" && temp.substr(0,7) != "%FORMAT" && temp.substr(0,5) != "%FLAG"){
+                int value;
+                std::istringstream line(temp);
+                while(line >> value){
+                    ANGLES_INC_HYDROGEN.push_back(value);
+                }
+            }
+            else if(current_flag == "DIHEDRALS_INC_HYDROGEN" && temp.substr(0,7) != "%FORMAT" && temp.substr(0,5) != "%FLAG"){
+                int value;
+                std::istringstream line(temp);
+                while(line >> value){
+                    DIHEDRALS_INC_HYDROGEN.push_back(value);
+                }
+            }
+            else if(current_flag == "DIHEDRALS_WITHOUT_HYDROGEN" && temp.substr(0,7) != "%FORMAT" && temp.substr(0,5) != "%FLAG"){
+                int value;
+                std::istringstream line(temp);
+                while(line >> value){
+                    DIHEDRALS_WITHOUT_HYDROGEN.push_back(value);
+                }
+            }
+            else if(current_flag == "EXCLUDED_ATOMS_LIST" && temp.substr(0,7) != "%FORMAT" && temp.substr(0,5) != "%FLAG"){
+                int value;
+                std::istringstream line(temp);
+                while(line >> value){
+                    DIHEDRALS_WITHOUT_HYDROGEN.push_back(value);
+                }
+            }
            
         }
 
