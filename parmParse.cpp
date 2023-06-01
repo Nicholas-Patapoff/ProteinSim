@@ -191,9 +191,52 @@ parm::parm(std::string parm7file){
                 int value;
                 std::istringstream line(temp);
                 while(line >> value){
-                    DIHEDRALS_WITHOUT_HYDROGEN.push_back(value);
+                    EXCLUDED_ATOMS_LIST.push_back(value);
                 }
             }
+            else if(current_flag == "HBOND_ACOEF" && temp.substr(0,7) != "%FORMAT" && temp.substr(0,5) != "%FLAG"){
+                float value;
+                std::istringstream line(temp);
+                while(line >> value){
+                    HBOND_ACOEF.push_back(value);
+                }
+            }
+            else if(current_flag == "HBOND_BCOEF" && temp.substr(0,7) != "%FORMAT" && temp.substr(0,5) != "%FLAG"){
+                float value;
+                std::istringstream line(temp);
+                while(line >> value){
+                    HBOND_BCOEF.push_back(value);
+                }
+            }
+            else if(current_flag == "HBCUT" && temp.substr(0,7) != "%FORMAT" && temp.substr(0,5) != "%FLAG"){
+                float value;
+                std::istringstream line(temp);
+                while(line >> value){
+                    HBCUT.push_back(value);
+                }
+            }
+            else if(current_flag == "AMBER_ATOM_TYPE" && temp.substr(0,7) != "%FORMAT" && temp.substr(0,5) != "%FLAG"){
+                std::string value;
+                std::istringstream line(temp);
+                while(line >> value){
+                    AMBER_ATOM_TYPE.push_back(value);
+                }
+            }
+            else if(current_flag == "AMBER_ATOM_TYPE" && temp.substr(0,7) != "%FORMAT" && temp.substr(0,5) != "%FLAG"){
+                std::string value;
+                std::istringstream line(temp);
+                while(line >> value){
+                    AMBER_ATOM_TYPE.push_back(value);
+                }
+            }
+            else if(current_flag == "TREE_CHAIN_CLASSIFICATION" && temp.substr(0,7) != "%FORMAT" && temp.substr(0,5) != "%FLAG"){
+                std::string value;
+                std::istringstream line(temp);
+                while(line >> value){
+                    TREE_CHAIN_CLASSIFICATION.push_back(value);
+                }
+            }
+            
            
         }
 

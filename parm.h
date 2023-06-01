@@ -30,7 +30,16 @@ std::vector<float> SCNB_SCALE_FACTOR;
 std::vector<float> SOLTY; //not currently implemented in AMBER
 std::vector<float> LENNARD_JONES_ACOEF;
 std::vector<float> LENNARD_JONES_BCOEF;
-
-
+std::vector<int> BONDS_WITHOUT_HYDROGEN;
+std::vector<int> ANGLES_INC_HYDROGEN;
+std::vector<int> DIHEDRALS_INC_HYDROGEN;
+std::vector<int> DIHEDRALS_WITHOUT_HYDROGEN;
+std::vector<int> EXCLUDED_ATOMS_LIST;
+std::vector<float> HBOND_ACOEF;
+std::vector<float> HBOND_BCOEF;
+std::vector<float> HBCUT;
+std::vector<std::string> AMBER_ATOM_TYPE;
+std::vector<std::string> TREE_CHAIN_CLASSIFICATION;
+std::vector<
 };
 #endif
