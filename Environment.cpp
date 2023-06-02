@@ -14,7 +14,8 @@ Environment::Environment(std::string pdb){
                 append_name(temp.substr(13, 4));
                 append_residue(temp.substr(18, 2));
                 append_coords(temp.substr(31,8),temp.substr(39, 8),temp.substr(47, 8));
-                std::cout << "atom!" << std::endl;            }
+                //std::cout << "atom!" << std::endl;            
+                }
             else if(temp.substr(0, 6) == "HETATM"){
                 append_Hname(temp.substr(13, 4));
                 append_Hresidue(temp.substr(18, 2));
@@ -44,7 +45,7 @@ void Environment::append_coords(std::string a, std::string b, std::string c){
     float x = std::stof(a);
     float y = std::stof(b);
     float z = std::stof(c);
-    std::cout << x << " " << y << " " << z << std::endl;
+    //std::cout << x << " " << y << " " << z << std::endl;
     Acoords.push_back(x);
     Acoords.push_back(y);
     Acoords.push_back(z);

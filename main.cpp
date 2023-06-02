@@ -47,7 +47,6 @@ std::cout << test.CAP_INTO2.size() << " CAP_INTO2" << std::endl;
 std::cout << test.RADIUS_SET.size() << " RADIUS_SET" << std::endl; 
 std::cout << test.RADII.size() << " RADII" << std::endl; 
 std::cout << test.IPOL.size() << " IPOL" << std::endl; 
-
 std::cout << test.POLARIZABILITY.size() << " POLARIZABILITY" << std::endl; 
 
 
