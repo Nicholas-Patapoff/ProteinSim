@@ -29,9 +29,27 @@ std::cout << test.SCNB_SCALE_FACTOR.size() << " SCNB_SCALE" << std::endl;
 std::cout << test.SOLTY.size() << " SOLTY" << std::endl;
 std::cout << test.LENNARD_JONES_ACOEF.size() << " LJAC" << std::endl;
 std::cout << test.LENNARD_JONES_BCOEF.size() << " LJAB" << std::endl;
-//for(int i = 0; i < test.ATOM_NAME.size(); i++){
-//std::cout << test.ATOM_NAME[i] << "/";
-//}
+std::cout << test.BONDS_WITHOUT_HYDROGEN.size() << " BONDS_WITHOUT_H" << std::endl; 
+std::cout << test.ANGLES_INC_HYDROGEN.size() << " ANGLES_INC_HYDROGEN" << std::endl; 
+std::cout << test.DIHEDRALS_WITHOUT_HYDROGEN.size() << " DIHEDRALS_WITHOUT_HYDROGEN" << std::endl; 
+std::cout << test.EXCLUDED_ATOMS_LIST.size() << " EXCLUDED_ATOMS_LIST" << std::endl; 
+std::cout << test.HBOND_ACOEF.size() << " HBOND_ACOEF" << std::endl; 
+std::cout << test.HBOND_BCOEF.size() << " HBOND_BCOEF" << std::endl; 
+std::cout << test.AMBER_ATOM_TYPE.size() << " AMBER_ATOM_TYPE" << std::endl; 
+std::cout << test.TREE_CHAIN_CLASSIFICATION.size() << " TREE_CHAIN_CLASSIFICATION" << std::endl; 
+std::cout << test.JOIN_ARRAY.size() << " JOIN_ARRAY" << std::endl; 
+std::cout << test.IROTAT.size() << " IROTAT" << std::endl; 
+std::cout << test.SOLVENT_POINTERS.size() << " SOLVENT_POINTERS" << std::endl; 
+std::cout << test.ATOMS_PER_MOLECULE.size() << " ATOMS_PER_MOLECULE" << std::endl; 
+std::cout << test.BOX_DIMENSIONS.size() << " BOX_DIMENSIONS" << std::endl; 
+std::cout << test.CAP_INFO.size() << " CAP_INFO" << std::endl; 
+std::cout << test.CAP_INTO2.size() << " CAP_INTO2" << std::endl; 
+std::cout << test.RADIUS_SET.size() << " RADIUS_SET" << std::endl; 
+std::cout << test.RADII.size() << " RADII" << std::endl; 
+std::cout << test.IPOL.size() << " IPOL" << std::endl; 
+
+std::cout << test.POLARIZABILITY.size() << " POLARIZABILITY" << std::endl; 
+
 
 
 

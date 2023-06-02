@@ -40,6 +40,16 @@ std::vector<float> HBOND_BCOEF;
 std::vector<float> HBCUT;
 std::vector<std::string> AMBER_ATOM_TYPE;
 std::vector<std::string> TREE_CHAIN_CLASSIFICATION;
-std::vector<
+std::vector<int> JOIN_ARRAY;
+std::vector<int> IROTAT;
+std::vector<int> SOLVENT_POINTERS;
+std::vector<int> ATOMS_PER_MOLECULE;
+std::vector<float> BOX_DIMENSIONS;
+std::vector<int> CAP_INFO;
+std::vector<float> CAP_INTO2;
+std::vector<std::string> RADIUS_SET;
+std::vector<float> RADII;
+std::vector<int> IPOL;
+std::vector<float> POLARIZABILITY;
 };
 #endif

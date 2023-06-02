@@ -236,8 +236,79 @@ parm::parm(std::string parm7file){
                     TREE_CHAIN_CLASSIFICATION.push_back(value);
                 }
             }
-            
-           
+            else if(current_flag == "JOIN_ARRAY" && temp.substr(0,7) != "%FORMAT" && temp.substr(0,5) != "%FLAG"){
+                int value;
+                std::istringstream line(temp);
+                while(line >> value){
+                    JOIN_ARRAY.push_back(value);
+                }
+            }
+            else if(current_flag == "IROTAT" && temp.substr(0,7) != "%FORMAT" && temp.substr(0,5) != "%FLAG"){
+                int value;
+                std::istringstream line(temp);
+                while(line >> value){
+                    IROTAT.push_back(value);
+                }
+            }
+            else if(current_flag == "SOLVENT_POINTERS" && temp.substr(0,7) != "%FORMAT" && temp.substr(0,5) != "%FLAG"){
+                int value;
+                std::istringstream line(temp);
+                while(line >> value){
+                    SOLVENT_POINTERS.push_back(value);
+                }
+            }
+           else if(current_flag == "ATOMS_PER_MOLECULE" && temp.substr(0,7) != "%FORMAT" && temp.substr(0,5) != "%FLAG"){
+                int value;
+                std::istringstream line(temp);
+                while(line >> value){
+                    ATOMS_PER_MOLECULE.push_back(value);
+                }
+            }
+            else if(current_flag == "BOX_DIMENSIONS" && temp.substr(0,7) != "%FORMAT" && temp.substr(0,5) != "%FLAG"){
+                float value;
+                std::istringstream line(temp);
+                while(line >> value){
+                    BOX_DIMENSIONS.push_back(value);
+                }
+            }
+            else if(current_flag == "CAP_INFO" && temp.substr(0,7) != "%FORMAT" && temp.substr(0,5) != "%FLAG"){
+                int value;
+                std::istringstream line(temp);
+                while(line >> value){
+                    CAP_INFO.push_back(value);
+                }
+            }
+            else if(current_flag == "CAP_INTO2" && temp.substr(0,7) != "%FORMAT" && temp.substr(0,5) != "%FLAG"){
+                float value;
+                std::istringstream line(temp);
+                while(line >> value){
+                    CAP_INTO2.push_back(value);
+                }
+            }
+            else if(current_flag == "CAP_INFO" && temp.substr(0,7) != "%FORMAT" && temp.substr(0,5) != "%FLAG"){
+                RADIUS_SET.push_back(temp);
+            }
+            else if(current_flag == "RADII" && temp.substr(0,7) != "%FORMAT" && temp.substr(0,5) != "%FLAG"){
+                float value;
+                std::istringstream line(temp);
+                while(line >> value){
+                    RADII.push_back(value);
+                }
+            }
+            else if(current_flag == "IPOL" && temp.substr(0,7) != "%FORMAT" && temp.substr(0,5) != "%FLAG"){
+                int value;
+                std::istringstream line(temp);
+                while(line >> value){
+                    IPOL.push_back(value);
+                }
+            }
+            else if(current_flag == "POLARIZABILITY" && temp.substr(0,7) != "%FORMAT" && temp.substr(0,5) != "%FLAG"){
+                float value;
+                std::istringstream line(temp);
+                while(line >> value){
+                    POLARIZABILITY.push_back(value);
+                }
+            }
         }
 
 
