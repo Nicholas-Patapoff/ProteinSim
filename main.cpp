@@ -3,6 +3,7 @@
 #include <string>
 #include "Env.h"
 #include "parm.h"
+#include "Sim.h"
 int main()
 {
 
@@ -49,8 +50,19 @@ std::cout << test.RADII.size() << " RADII" << std::endl;
 std::cout << test.IPOL.size() << " IPOL" << std::endl; 
 std::cout << test.POLARIZABILITY.size() << " POLARIZABILITY" << std::endl; 
 
+simulation small_probe(PISUM_SATIVUM, test, 1);
 
+int steps = 0;
+small_probe.random_vel();
+small_probe.exports(steps);
+steps ++;
+small_probe.update_coord(1);
+small_probe.exports(steps);
 
+for(int i = 0; i < 20; i ++){
+    
+
+}
 
 return 0;
 }
