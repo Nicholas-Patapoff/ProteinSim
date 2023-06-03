@@ -16,9 +16,11 @@ parm::parm(std::string parm7file){
                 std::istringstream splitstring(temp);
                 splitstring >> current_flag;
                 splitstring >> current_flag;
-                //std::cout << current_flag << std::endl;
+                
 
             }
+            
+
             if(current_flag == "ATOM_NAME" && temp.substr(0,7) != "%FORMAT" && temp.substr(0,5) != "%FLAG"){
                 std::string value;
                 for(int i = 0; i < temp.size(); i+= 4){

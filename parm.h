@@ -4,11 +4,15 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <variant>
+#include<unordered_map>
 
 class parm{
 private:
 
 public: 
+using var_type = std::variant<int, float, std::string>;
+std::unordered_map<std::string, std::vector<var_type>> values; 
 parm(std::string pdb);
 std::vector<std::string> ATOM_NAME;
 std::vector<float> CHARGE;
