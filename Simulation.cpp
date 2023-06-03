@@ -30,6 +30,7 @@ void simulation::update_coord(float step_size){
 for(int i = 0; i < velocities.size(); i++){
     coord->Acoords[i] +=  velocities[i] * step_size;
 }
+//update git
 
 
 }
