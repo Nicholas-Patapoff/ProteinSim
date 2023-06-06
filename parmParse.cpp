@@ -2,7 +2,9 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <unordered_map>
 #include <vector>
+#include <variant>
 #include "parm.h"
 
 parm::parm(std::string parm7file){
@@ -23,22 +25,16 @@ parm::parm(std::string parm7file){
                 splitstring >> current_format; //this saves as "%format"
                 splitstring >> current_format; // this saves as "(format_identifier)
                 if(current_format == "(20a4)" || current_format == "(1a80)"){
-                    std::vector<std::string> names;
-                    names.push_back("");
-                    values.emplace(current_flag, names);    
+                    values.emplace(current_flag, std::vector<T>());    
                 }
                 else if(current_format == "(5E16.8)"){
-                    std::vector<float> floating;
-                    floating.push_back(0);
-                    values.emplace(current_flag, floating);
+                    values.emplace(current_flag, std::vector<T>());
 
                 }
                 else if(current_format == "(10I8)" || current_format == "(1I8)"){
-                    std::vector<int> inting;
-                    inting.push_back(0);
-                    values.emplace(current_flag, inting);
+                    values.emplace(current_flag, std::vector<T>());
                 }
-            }
+            } 
             
             else if(current_format == "(20a4)"){
                 for(int i = 0; i < temp.size() - 1; i+= 4){

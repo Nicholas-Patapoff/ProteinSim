@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream> 
 #include <string>
+#include <variant>
+#include <unordered_map>
 #include "Env.h"
 #include "parm.h"
 #include "Sim.h"
