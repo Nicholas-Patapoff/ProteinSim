@@ -14,19 +14,6 @@ parm test("output.parm7");
 std::cout<< "Completed!" << std::endl;
 
 simulation small_probe(PISUM_SATIVUM, test, 1);
-using T = std::variant<int, float, std::string>;
-std::unordered_map<std::string, std::vector<T> >::iterator check = test.values.find("ATOM_NAME");
-                std::vector<T>& vec = check->second;
-for (const auto& element : vec) {
-                    if (std::holds_alternative<int>(element)) {
-                        std::cout << "Integer value: " << std::get<int>(element) << std::endl;
-                    } else if (std::holds_alternative<float>(element)) {
-                        std::cout << "Float value: " << std::get<float>(element) << std::endl;
-                    } else if (std::holds_alternative<std::string>(element)) {
-                        std::cout << "String value: " << std::get<std::string>(element) << std::endl;
-                    }
-            }
-
 
 small_probe.random_vel();
 for(int i = 0; i < 20; i ++){
