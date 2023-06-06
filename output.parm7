@@ -1,7 +1,7 @@
 %VERSION  VERSION_STAMP = V0001.000  DATE = 05/25/23  16:09:40                  
 %FLAG TITLE                                                                     
 %FORMAT(20a4)                                                                   
-GLY                                                                             
+GLY FLY MUMPTPR TYT                                                                            
 %FLAG POINTERS                                                                  
 %FORMAT(10I8)                                                                   
      135      11      59      79     134     108     306     321       0       0
