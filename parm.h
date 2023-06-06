@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 #include <variant>
-#include<unordered_map>
+#include <unordered_map>
 
 class parm{
 private:
@@ -13,7 +13,14 @@ private:
 public: 
 using T = std::variant<int, float, std::string>;
 std::unordered_map<std::string, std::vector<T> > values;
+//std::unordered_map<std::string, std::vector<T> >::iterator test;
 parm(std::string pdb);
+
+
+
+
+
+/*
 std::vector<std::string> ATOM_NAME;
 std::vector<float> CHARGE;
 std::vector<int> ATOMIC_NUMBER;
@@ -55,6 +62,7 @@ std::vector<std::string> RADIUS_SET;
 std::vector<float> RADII;
 std::vector<int> IPOL;
 std::vector<float> POLARIZABILITY;
+*/
 };
 
 

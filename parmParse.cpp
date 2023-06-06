@@ -16,30 +16,50 @@ parm::parm(std::string parm7file){
         std::string current_format;
         while(getline(nfile, temp)){
             if(temp.substr(0,5) == "%FLAG"){ // this is good but problematic for files which have comments between the flags/formats and thier identifiers
-                
+                std::string format = temp;
                 std::istringstream splitstring(temp);
                 splitstring >> current_flag; // saves as "%flag"
                 splitstring >> current_flag; // saves as "flag_type"
                 getline(nfile, temp);
-                //std::istringstream splitstring(temp);
-                splitstring >> current_format; //this saves as "%format"
-                splitstring >> current_format; // this saves as "(format_identifier)
+                std::cout << temp << std::endl;
+                temp = temp.substr(7, 10);
+                std::istringstream splitstring2(temp);
+                splitstring2 >> current_format; //this saves as "%format"
+                std::cout << temp << std::endl;
+
                 if(current_format == "(20a4)" || current_format == "(1a80)"){
+                    std::cout << current_format << std::endl;
                     values.emplace(current_flag, std::vector<T>());    
                 }
                 else if(current_format == "(5E16.8)"){
+                    std::cout << current_format << std::endl;
+
                     values.emplace(current_flag, std::vector<T>());
 
                 }
                 else if(current_format == "(10I8)" || current_format == "(1I8)"){
+                    std::cout << current_format << std::endl;
+
                     values.emplace(current_flag, std::vector<T>());
                 }
             } 
             
             else if(current_format == "(20a4)"){
+                std::unordered_map<std::string, std::vector<T> >::iterator test = values.find(current_flag);
+                std::vector<T>& vec = test->second;
+
                 for(int i = 0; i < temp.size() - 1; i+= 4){
-                    //values[current_flag].push_back(temp.substr(i, 4));
+                    vec.push_back(temp.substr(i, 4));
                 }
+                for (const auto& element : vec) {
+                    if (std::holds_alternative<int>(element)) {
+                        std::cout << "Integer value: " << std::get<int>(element) << std::endl;
+                    } else if (std::holds_alternative<float>(element)) {
+                        std::cout << "Float value: " << std::get<float>(element) << std::endl;
+                    } else if (std::holds_alternative<std::string>(element)) {
+                        std::cout << "String value: " << std::get<std::string>(element) << std::endl;
+                    }
+            }
             }
 
             else if(current_format == "(5E16.8)"){
@@ -68,8 +88,7 @@ parm::parm(std::string parm7file){
 
 
 
-
-
+/*
 
 
                 
@@ -364,7 +383,8 @@ parm::parm(std::string parm7file){
                 }
             }
         }
+*/
 
-
+        } 
     }
 }

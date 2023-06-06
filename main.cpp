@@ -12,13 +12,46 @@ int main()
 Environment PISUM_SATIVUM("output.pdb");
 parm test("output.parm7"); 
 std::cout<< "Completed!" << std::endl;
+
+simulation small_probe(PISUM_SATIVUM, test, 1);
+using T = std::variant<int, float, std::string>;
+std::unordered_map<std::string, std::vector<T> >::iterator check = test.values.find("ATOM_NAME");
+                std::vector<T>& vec = check->second;
+for (const auto& element : vec) {
+                    if (std::holds_alternative<int>(element)) {
+                        std::cout << "Integer value: " << std::get<int>(element) << std::endl;
+                    } else if (std::holds_alternative<float>(element)) {
+                        std::cout << "Float value: " << std::get<float>(element) << std::endl;
+                    } else if (std::holds_alternative<std::string>(element)) {
+                        std::cout << "String value: " << std::get<std::string>(element) << std::endl;
+                    }
+            }
+
+
+small_probe.random_vel();
+for(int i = 0; i < 20; i ++){
+    small_probe.exports(i);
+    small_probe.update_coord(1);
+}
+
+
+
+
+
+
+
+
+
+
+
+/*
 std::cout << test.ATOM_NAME.size() << " ATOM_NAME"<< std::endl;
 //std::cout << test.values["ATOM_NAME"].size() << std::endl;
 std::cout << test.CHARGE.size() << " CHARGE" << std::endl;
 //std::cout << test.ATOMIC_NUMBER.size() << " ATOMIC_NUMBER" << std::endl;
 std::cout << test.MASS.size() << " MASS" << std::endl;
 //std::cout << test.values["MASS"].size() << std::endl; 
-/*
+
 std::cout << test.ATOM_TYPE_INDEX.size() << " ATOM_TYPE_INDEX" << std::endl;
 std::cout << test.NONBONDED_PARM_INDEX.size() << " NONBUNDED_PARM_INDEX" << std::endl;
 std::cout << test.RESIDUE_LABEL.size() << " RESIDUE_LABEL" << std::endl;
@@ -55,15 +88,7 @@ std::cout << test.RADII.size() << " RADII" << std::endl;
 std::cout << test.IPOL.size() << " IPOL" << std::endl; 
 std::cout << test.POLARIZABILITY.size() << " POLARIZABILITY" << std::endl; 
 */
-simulation small_probe(PISUM_SATIVUM, test, 1);
 
-
-
-small_probe.random_vel();
-for(int i = 0; i < 20; i ++){
-    small_probe.exports(i);
-    small_probe.update_coord(1);
-}
 
 return 0;
 }

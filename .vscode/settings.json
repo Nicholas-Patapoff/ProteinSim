@@ -46,6 +46,9 @@
         "xstddef": "cpp",
         "xtr1common": "cpp",
         "xutility": "cpp",
-        "unordered_map": "cpp"
+        "unordered_map": "cpp",
+        "list": "cpp",
+        "variant": "cpp",
+        "xhash": "cpp"
     }
 }
