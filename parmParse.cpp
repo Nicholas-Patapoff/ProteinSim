@@ -20,20 +20,20 @@ parm::parm(std::string parm7file){
                 std::istringstream splitstring(temp);
                 splitstring >> current_flag; // saves as "%flag"
                 splitstring >> current_flag; // saves as "flag_type"
+
                 getline(nfile, temp);
                 std::cout << temp << std::endl;
                 temp = temp.substr(7, 10);
                 std::istringstream splitstring2(temp);
                 splitstring2 >> current_format; //this saves as "%format"
-                std::cout << temp << std::endl;
-
+                std::cout << current_flag << std::endl;
                 if(current_format == "(20a4)" || current_format == "(1a80)"){
                     std::cout << current_format << std::endl;
                     values.emplace(current_flag, std::vector<T>());    
                 }
                 else if(current_format == "(5E16.8)"){
                     std::cout << current_format << std::endl;
-
+                    std::cout << "36" << std::endl;
                     values.emplace(current_flag, std::vector<T>());
 
                 }
@@ -51,6 +51,7 @@ parm::parm(std::string parm7file){
                 for(int i = 0; i < temp.size() - 1; i+= 4){
                     vec.push_back(temp.substr(i, 4));
                 }
+                /*
                 for (const auto& element : vec) {
                     if (std::holds_alternative<int>(element)) {
                         std::cout << "Integer value: " << std::get<int>(element) << std::endl;
@@ -59,16 +60,20 @@ parm::parm(std::string parm7file){
                     } else if (std::holds_alternative<std::string>(element)) {
                         std::cout << "String value: " << std::get<std::string>(element) << std::endl;
                     }
-            }
+                    */
             }
 
             else if(current_format == "(5E16.8)"){
+                std::cout << "67" << std::endl;
                 std::unordered_map<std::string, std::vector<T> >::iterator test = values.find(current_flag);
                 std::vector<T>& vec = test->second;
 
                 for(int i = 0; i < temp.size() - 1; i+= 16){
+                    std::cout << i << std::endl;
+                    std::cout << "73" << std::endl;
                     vec.push_back(temp.substr(i, 16));
                 }
+                /*
                 for (const auto& element : vec) {
                     if (std::holds_alternative<int>(element)) {
                         std::cout << "Integer value: " << std::get<int>(element) << std::endl;
@@ -78,16 +83,17 @@ parm::parm(std::string parm7file){
                         std::cout << "String value: " << std::get<std::string>(element) << std::endl;
                     }
                 }
+                */
             }
 
             else if(current_format == "(10I8)"){
                 std::unordered_map<std::string, std::vector<T> >::iterator test = values.find(current_flag);
                 std::vector<T>& vec = test->second;
 
-                for(int i = 0; i < temp.size() - 1; i+= 8){
+                for(int i = 0; i < temp.size() - 1; i += 8){
                     vec.push_back(temp.substr(i, 8));
                 }
-                for (const auto& element : vec) {
+                /* for (const auto& element : vec) {
                     if (std::holds_alternative<int>(element)) {
                         std::cout << "Integer value: " << std::get<int>(element) << std::endl;
                     } else if (std::holds_alternative<float>(element)) {
@@ -95,7 +101,8 @@ parm::parm(std::string parm7file){
                     } else if (std::holds_alternative<std::string>(element)) {
                         std::cout << "String value: " << std::get<std::string>(element) << std::endl;
                     }
-                }
+                }*/
+                
 
             }
 
@@ -106,9 +113,11 @@ parm::parm(std::string parm7file){
             }
 
             else if(current_format == "(1I8)"){
-std::unordered_map<std::string, std::vector<T> >::iterator test = values.find(current_flag);
+                std::unordered_map<std::string, std::vector<T> >::iterator test = values.find(current_flag);
                 std::vector<T>& vec = test->second;
-                vec.push_back(std::stoi(temp));            }
+                vec.push_back(std::stoi(temp));            
+                }
+
 
 
 
