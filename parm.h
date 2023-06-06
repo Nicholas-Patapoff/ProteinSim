@@ -10,9 +10,10 @@
 class parm{
 private:
 
+using attempt = std::variant<int, float, std::string>;
+std::vector<attempt> multiple;
 public: 
-using var_type = std::variant<int, float, std::string>;
-std::unordered_map<std::string, std::vector<var_type>> values; 
+std::unordered_map<std::string, attempt> values; 
 parm(std::string pdb);
 std::vector<std::string> ATOM_NAME;
 std::vector<float> CHARGE;
@@ -56,4 +57,6 @@ std::vector<float> RADII;
 std::vector<int> IPOL;
 std::vector<float> POLARIZABILITY;
 };
+
+
 #endif

@@ -11,16 +11,72 @@ parm::parm(std::string parm7file){
     if(nfile.is_open()){
         std::string temp;
         std::string current_flag;
+        std::string current_format;
         while(getline(nfile, temp)){
-            if(temp.substr(0,5) == "%FLAG"){
-                std::istringstream splitstring(temp);
-                splitstring >> current_flag;
-                splitstring >> current_flag;
+            if(temp.substr(0,5) == "%FLAG"){ // this is good but problematic for files which have comments between the flags/formats and thier identifiers
                 
+                std::istringstream splitstring(temp);
+                splitstring >> current_flag; // saves as "%flag"
+                splitstring >> current_flag; // saves as "flag_type"
+                getline(nfile, temp);
+                //std::istringstream splitstring(temp);
+                splitstring >> current_format; //this saves as "%format"
+                splitstring >> current_format; // this saves as "(format_identifier)
+                if(current_format == "(20a4)" || current_format == "(1a80)"){
+                    std::vector<std::string> names;
+                    names.push_back("");
+                    values.emplace(current_flag, names);    
+                }
+                else if(current_format == "(5E16.8)"){
+                    std::vector<float> floating;
+                    floating.push_back(0);
+                    values.emplace(current_flag, floating);
 
+                }
+                else if(current_format == "(10I8)" || current_format == "(1I8)"){
+                    std::vector<int> inting;
+                    inting.push_back(0);
+                    values.emplace(current_flag, inting);
+                }
             }
             
+            else if(current_format == "(20a4)"){
+                for(int i = 0; i < temp.size() - 1; i+= 4){
+                    //values[current_flag].push_back(temp.substr(i, 4));
+                }
+            }
 
+            else if(current_format == "(5E16.8)"){
+                for(int i = 0; i < temp.size() - 1; i+= 16){
+                    //values[current_flag].push_back(std::stof(temp.substr(i, 16)));
+                }
+            }
+
+            else if(current_format == "(10I8)"){
+                for(int i = 0; i < temp.size() - 1; i+= 8){
+                    //this->values[current_flag].push_back(std::stoi(temp.substr(i, 8)));
+                }
+
+            }
+
+            else if(current_format == "(1a80)"){
+                //values[current_flag].push_back(temp);
+            }
+
+            else if(current_format == "(1I8)"){
+                //values[current_flag].push_back(std::stoi(temp));
+            }
+
+
+
+
+
+
+
+
+
+
+                
             if(current_flag == "ATOM_NAME" && temp.substr(0,7) != "%FORMAT" && temp.substr(0,5) != "%FLAG"){
                 std::string value;
                 for(int i = 0; i < temp.size(); i+= 4){

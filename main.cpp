@@ -11,9 +11,12 @@ Environment PISUM_SATIVUM("output.pdb");
 parm test("output.parm7"); 
 std::cout<< "Completed!" << std::endl;
 std::cout << test.ATOM_NAME.size() << " ATOM_NAME"<< std::endl;
+//std::cout << test.values["ATOM_NAME"].size() << std::endl;
 std::cout << test.CHARGE.size() << " CHARGE" << std::endl;
-std::cout << test.ATOMIC_NUMBER.size() << " ATOMIC_NUMBER" << std::endl;
+//std::cout << test.ATOMIC_NUMBER.size() << " ATOMIC_NUMBER" << std::endl;
 std::cout << test.MASS.size() << " MASS" << std::endl;
+//std::cout << test.values["MASS"].size() << std::endl; 
+/*
 std::cout << test.ATOM_TYPE_INDEX.size() << " ATOM_TYPE_INDEX" << std::endl;
 std::cout << test.NONBONDED_PARM_INDEX.size() << " NONBUNDED_PARM_INDEX" << std::endl;
 std::cout << test.RESIDUE_LABEL.size() << " RESIDUE_LABEL" << std::endl;
@@ -49,8 +52,10 @@ std::cout << test.RADIUS_SET.size() << " RADIUS_SET" << std::endl;
 std::cout << test.RADII.size() << " RADII" << std::endl; 
 std::cout << test.IPOL.size() << " IPOL" << std::endl; 
 std::cout << test.POLARIZABILITY.size() << " POLARIZABILITY" << std::endl; 
-
+*/
 simulation small_probe(PISUM_SATIVUM, test, 1);
+
+
 
 small_probe.random_vel();
 for(int i = 0; i < 20; i ++){
