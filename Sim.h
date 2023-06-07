@@ -4,7 +4,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include<memory>
+#include <memory>
 #include "Env.h"
 #include "parm.h"
 
@@ -12,7 +12,7 @@ class simulation{
 private:
 std::unique_ptr<Environment> coord;
 std::unique_ptr<parm> top;
-void displacement_vect(std::vector<float>& d, std::vector<float>& atom1, std::vector<float>& atom2);
+void displacement_vect(std::vector<float>& d, int atom1, int atom2);
 //float spring_force;
 void magnitude(std::vector<float>& object, float& mag);
 void unit_vector(float& mag, std::vector<float> d, std::vector<float>& unitv);
@@ -25,7 +25,9 @@ simulation(Environment& coord, parm& top, float step);
 void random_vel();
 void update_coord(float step_size);
 void exports(int count);
-std::vector<float> spring_force();
+std::vector<float> spring_force(int atom1, int atom2, float kval, float eq);
+
+
 
 };
 
