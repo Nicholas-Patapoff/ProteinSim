@@ -16,7 +16,7 @@ simulation::simulation(Environment& temp1, parm& temp2, float step){
 
 
     velocities = std::vector<float>(coord->Acoords.size(), 0);
-}
+    forces = std::vector<float>(velocities.size(), 0);}
 
 
 void simulation::update_coord(float step_size){
@@ -24,29 +24,62 @@ void simulation::update_coord(float step_size){
 for(int i = 0; i < velocities.size(); i++){
     coord->Acoords[i] +=  velocities[i] * step_size;
 }
-//update git
 
 
 }
 
-std::vector<float> simulation::spring_force(int atom1, int atom2, float k, float eq){
+void simulation::force_additions(){ //all forces on protien for bond/FF interactions
+    //find the value vector for all bonds that do not include hydrogen
+    std::unordered_map<std::string, std::vector<T> >::iterator bwh = top->values.find("BONDS_WITHOUT_HYDROGEN");
+        std::vector<T>& BWoutH = bwh->second;
+    //find the value vector for all bonds that inolve atleast 1 hydrogen
+    std::unordered_map<std::string, std::vector<T> >::iterator bih = top->values.find("BONDS_INC_HYDROGEN");
+        std::vector<T>& BIH = bih->second;
 
+    std::unordered_map<std::string, std::vector<T> >::iterator bfc = top->values.find("BOND_FORCE_CONSTANT");
+        std::vector<T>& BForceC = bfc->second;
+
+    std::unordered_map<std::string, std::vector<T> >::iterator bev = top->values.find("BOND_FORCE_CONSTANT");
+        std::vector<T>& BEQV = bev->second;
+        std::cout << "forces size fisrt " << forces.size() << std::endl;
+        std::cout << BWoutH.size() << " size" << std::endl;
+    for(int i = 0; i < BWoutH.size(); i+=3){
+        spring_force( std::get<int>(BWoutH[i]) / 3 ,std::get<int>(BWoutH[i + 1]) / 3, std::get<float>(BForceC[std::get<int>(BWoutH[i + 2]) - 1]), std::get<float>(BEQV[std::get<int>(BWoutH[i + 2]) - 1]) );
+    }
+    for(int i = 0; i < forces.size(); i+=3){
+        std::cout << forces[i] << " "<< forces[i + 1] << " "<< forces[i + 2] << std::endl;
+    }
+    
+}
+
+
+void simulation::spring_force(int atom1, int atom2, float k, float eq){
+    std::cout<< "57" << std::endl;
     std::vector<float> disp;
     float dmag;
     std::vector<float> dunit_vect;
     std::vector<float> forces;
     displacement_vect(disp, atom1, atom2);
+    std::cout<< "63" << std::endl;
     magnitude(disp, dmag);
+    std::cout<< "65" << std::endl;
     unit_vector(dmag, disp, dunit_vect);
+    std::cout<< "67" << std::endl;
     for(int i = 0; i < disp.size(); i ++){
-        forces.push_back(-k * (disp[i] - eq * dunit_vect[i]));
+        std::cout<< "for 69" << std::endl;
+        forces[atom2 * 3 + i] += 0.5 * (-k * (disp[i] - eq * dunit_vect[i]));
+        std::cout<< "for 71" << std::endl;
+        forces[atom1 * 3 + i] += -0.5 *(-k * (disp[i] - eq * dunit_vect[i]));
+        std::cout<< "for 71" << std::endl;
+        std::cout<< "for 71" << std::endl;
     }
-    return forces;
+    std::cout<< "finished spring_force" << std::endl;
 }
 
 void simulation::unit_vector(float& mag, std::vector<float> d, std::vector<float>& unitv){
     for(int i = 0; i < d.size(); i++){
         unitv.push_back(d[i]/mag);
+        std::cout<< "push" << std::endl;
     }
 }
 

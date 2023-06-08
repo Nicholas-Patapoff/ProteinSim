@@ -16,17 +16,19 @@ void displacement_vect(std::vector<float>& d, int atom1, int atom2);
 //float spring_force;
 void magnitude(std::vector<float>& object, float& mag);
 void unit_vector(float& mag, std::vector<float> d, std::vector<float>& unitv);
-
+using T = std::variant<int, float, std::string>;
 public:
 std::vector<float> velocities;
+std::vector<float> forces;
+
 
 
 simulation(Environment& coord, parm& top, float step);
-void random_vel();
+
 void update_coord(float step_size);
 void exports(int count);
-std::vector<float> spring_force(int atom1, int atom2, float kval, float eq);
-
+void spring_force(int atom1, int atom2, float kval, float eq);
+void force_additions();
 
 
 };
