@@ -5,8 +5,8 @@
 #include "Env.h"
 #include "parm.h"
 #include "Sim.h"
-#include "math.h"
-
+#include <math.h>
+#include <thread>
 
 simulation::simulation(Environment& temp1, parm& temp2, float step){
 
@@ -25,6 +25,7 @@ void simulation::update_coord(float step_size, int frames){
     for(int i = 0; i < frames; i++){
         VerletAlg(step_size);
         std::cout << i << std::endl;
+        //std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 
 }
@@ -61,9 +62,10 @@ void simulation::spring_force(int atom1, int atom2, float k, float eq){
     unit_vector(dmag, disp, dunit_vect);
 
     for(int i = 0; i < disp.size(); i ++){
-        forces[atom2 * 3 + i] += 0.5 * (-k * (disp[i] - eq * dunit_vect[i]));
-        forces[atom1 * 3 + i] += -0.5 *(-k * (disp[i] - eq * dunit_vect[i]));
+        forces[atom2 * 3 + i] += -0.5 * (-k * (disp[i] - eq * dunit_vect[i]));
+        forces[atom1 * 3 + i] += 0.5 *(-k * (disp[i] - eq * dunit_vect[i]));
     }
+
 }
 
 void simulation::unit_vector(float& mag, std::vector<float> d, std::vector<float>& unitv){
@@ -101,6 +103,8 @@ force_additions();
 for(int atom = 0; atom < velocities.size(); atom++){
    velocities[atom] = velocities[atom] + forces[atom]*step_size / (2 * std::get<float>(Mass[atom/(int)3]));
 }
+
+std::cout << forces[3] << std::endl;
 
 }
 
