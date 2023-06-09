@@ -21,12 +21,11 @@ simulation::simulation(Environment& temp1, parm& temp2, float step){
     }
 
 
-void simulation::update_coord(float step_size){
-
-for(int i = 0; i < velocities.size(); i++){
-    coord->Acoords[i] +=  velocities[i] * step_size;
-}
-
+void simulation::update_coord(float step_size, int frames){
+    for(int i = 0; i < frames; i++){
+        VerletAlg(step_size);
+        std::cout << i << std::endl;
+    }
 
 }
 
@@ -41,12 +40,14 @@ void simulation::force_additions(){ //all forces on protien for bond/FF interact
     std::unordered_map<std::string, std::vector<T> >::iterator bfc = top->values.find("BOND_FORCE_CONSTANT");
         std::vector<T>& BForceC = bfc->second;
 
-    std::unordered_map<std::string, std::vector<T> >::iterator bev = top->values.find("BOND_FORCE_CONSTANT");
+    std::unordered_map<std::string, std::vector<T> >::iterator bev = top->values.find("BOND_EQUIL_VALUE");
         std::vector<T>& BEQV = bev->second;
     for(int i = 0; i < BWoutH.size(); i+=3){
-        spring_force( std::get<int>(BWoutH[i]) / 3 ,std::get<int>(BWoutH[i + 1]) / 3, std::get<float>(BForceC[std::get<int>(BWoutH[i + 2]) - 1]), std::get<float>(BEQV[std::get<int>(BWoutH[i + 2]) - 1]) );
+        spring_force( std::get<int>(BWoutH[i]) / 3,std::get<int>(BWoutH[i + 1]) / 3, std::get<float>(BForceC[std::get<int>(BWoutH[i + 2]) - 1]), std::get<float>(BEQV[std::get<int>(BWoutH[i + 2]) - 1]) );
     }
-    
+    for(int i = 0; i < BIH.size(); i+=3){ // this is a bond which include hydrogen. I want to stiffen interaction so as to reduce computational complexity. I can set up a method for selecting a model and integrate it into there
+        spring_force( std::get<int>(BIH[i]) / 3,std::get<int>(BIH[i + 1]) / 3, std::get<float>(BForceC[std::get<int>(BIH[i + 2]) - 1]), std::get<float>(BEQV[std::get<int>(BIH[i + 2]) - 1]) );
+    }
 }
 
 
@@ -84,6 +85,23 @@ void simulation::displacement_vect(std::vector<float>& d, int atom1, int atom2){
     for(int i = 0; i < 3; i++){
         d.push_back(coord->Acoords[atom1 * 3 + i] - coord->Acoords[atom2 * 3 + i]);
     }
+}
+
+void simulation::VerletAlg(float& step_size){
+    std::unordered_map<std::string, std::vector<T> >::iterator ms = top->values.find("MASS");
+        std::vector<T>& Mass = ms->second;
+for(int atom = 0; atom < velocities.size(); atom++){
+    velocities[atom] = velocities[atom] + (forces[atom] * step_size/(2 * std::get<float>(Mass[atom/(int)3])));
+}
+for(int atom = 0; atom < coord->Acoords.size(); atom++){
+    coord->Acoords[atom] = coord->Acoords[atom] + velocities[atom]*step_size;
+}
+forces.assign(forces.size(), 0);
+force_additions();
+for(int atom = 0; atom < velocities.size(); atom++){
+   velocities[atom] = velocities[atom] + forces[atom]*step_size / (2 * std::get<float>(Mass[atom/(int)3]));
+}
+
 }
 
 void simulation::exports(int count){

@@ -25,11 +25,11 @@ std::vector<float> forces;
 
 simulation(Environment& coord, parm& top, float step);
 
-void update_coord(float step_size);
+void update_coord(float step_size, int frames);
 void exports(int count);
 void spring_force(int atom1, int atom2, float kval, float eq);
 void force_additions();
-
+void VerletAlg(float& step); 
 
 };
 
