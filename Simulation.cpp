@@ -24,7 +24,12 @@ simulation::simulation(Environment& temp1, parm& temp2, float step){
 void simulation::update_coord(float step_size, int frames){
     for(int i = 0; i < frames; i++){
         VerletAlg(step_size);
-        std::cout << i << std::endl;
+        if(i % 50 == 0) {
+            std::cout << i << std::endl;
+            std::cout << forces[6] << " | " << forces[7] << " | " << forces[8] <<std::endl;
+            std::cout << coord->Acoords[6] << " | " << coord->Acoords[7] << " | " << coord->Acoords[8] <<std::endl;
+
+        }
         //std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 
@@ -62,8 +67,8 @@ void simulation::spring_force(int atom1, int atom2, float k, float eq){
     unit_vector(dmag, disp, dunit_vect);
 
     for(int i = 0; i < disp.size(); i ++){
-        forces[atom2 * 3 + i] += -0.5 * (-k * (disp[i] - eq * dunit_vect[i]));
-        forces[atom1 * 3 + i] += 0.5 *(-k * (disp[i] - eq * dunit_vect[i]));
+        forces[atom2 * 3 + i] += -0.5 * (-k * (disp[i] - eq * dunit_vect[i]) * (disp[i] - eq * dunit_vect[i]));
+        forces[atom1 * 3 + i] += -forces[atom2 * 3 + i];
     }
 
 }
@@ -93,7 +98,7 @@ void simulation::VerletAlg(float& step_size){
     std::unordered_map<std::string, std::vector<T> >::iterator ms = top->values.find("MASS");
         std::vector<T>& Mass = ms->second;
 for(int atom = 0; atom < velocities.size(); atom++){
-    velocities[atom] = velocities[atom] + (forces[atom] * step_size/(2 * std::get<float>(Mass[atom/(int)3])));
+    velocities[atom] = velocities[atom] + (forces[atom] * step_size/(2 * std::get<float>(Mass[atom/(int)3]) / 6.02214086e+23));
 }
 for(int atom = 0; atom < coord->Acoords.size(); atom++){
     coord->Acoords[atom] = coord->Acoords[atom] + velocities[atom]*step_size;
@@ -101,10 +106,9 @@ for(int atom = 0; atom < coord->Acoords.size(); atom++){
 forces.assign(forces.size(), 0);
 force_additions();
 for(int atom = 0; atom < velocities.size(); atom++){
-   velocities[atom] = velocities[atom] + forces[atom]*step_size / (2 * std::get<float>(Mass[atom/(int)3]));
+   velocities[atom] = velocities[atom] + forces[atom]*step_size / (2 * std::get<float>(Mass[atom/(int)3]) / 6.02214086e+23);
 }
 
-std::cout << forces[3] << std::endl;
 
 }
 

@@ -15,7 +15,7 @@ parm test("output.parm7");
 simulation small_probe(PISUM_SATIVUM, test, 1);
 
 small_probe.force_additions();
-small_probe.update_coord(.00001, 1000000);
+small_probe.update_coord(1e-13, 100000);
 
 
 
