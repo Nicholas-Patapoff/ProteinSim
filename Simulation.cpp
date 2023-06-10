@@ -26,8 +26,12 @@ void simulation::update_coord(float step_size, int frames){
         VerletAlg(step_size);
         if(i % 5000 == 0) {
             std::cout << i << std::endl;
-            std::cout << "Forces: "<< forces[6] << " | " << forces[7] << " | " << forces[8] <<std::endl;
-            std::cout << "coords: "<< coord->Acoords[6] << " | " << coord->Acoords[7] << " | " << coord->Acoords[8] <<std::endl;
+            std::cout << "velocities: "<< velocities[15] << " | " << velocities[16] << " | " << velocities[17] <<std::endl;
+            //std::cout << "velocities: "<< velocities[18] << " | " << velocities[19] << " | " << velocities[20] <<std::endl;
+            std::cout << "Forces: "<< forces[15] << " | " << forces[16] << " | " << forces[17] <<std::endl;
+            //std::cout << "Forces: "<< forces[18] << " | " << forces[19] << " | " << forces[20] <<std::endl;
+            //std::cout << "coords: "<< coord->Acoords[9] << " | " << coord->Acoords[10] << " | " << coord->Acoords[11] <<std::endl;
+            std::cout << "coords: "<< coord->Acoords[15] << " | " << coord->Acoords[16] << " | " << coord->Acoords[17] <<std::endl;
 
         }
         //std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -48,11 +52,12 @@ void simulation::force_additions(){ //all forces on protien for bond/FF interact
 
     std::unordered_map<std::string, std::vector<T> >::iterator bev = top->values.find("BOND_EQUIL_VALUE");
         std::vector<T>& BEQV = bev->second;
-    for(int i = 0; i < BWoutH.size(); i+=3){
+    for(int i = 0; i < BWoutH.size() - 1; i+=3){ //BWoutH.size()
         spring_force( std::get<int>(BWoutH[i]) / 3,std::get<int>(BWoutH[i + 1]) / 3, std::get<float>(BForceC[std::get<int>(BWoutH[i + 2]) - 1]), std::get<float>(BEQV[std::get<int>(BWoutH[i + 2]) - 1]) );
+
     }
     for(int i = 0; i < BIH.size(); i+=3){ // this is a bond which include hydrogen. I want to stiffen interaction so as to reduce computational complexity. I can set up a method for selecting a model and integrate it into there
-        //spring_force( std::get<int>(BIH[i]) / 3,std::get<int>(BIH[i + 1]) / 3, std::get<float>(BForceC[std::get<int>(BIH[i + 2]) - 1]), std::get<float>(BEQV[std::get<int>(BIH[i + 2]) - 1]) );
+        spring_force( std::get<int>(BIH[i]) / 3,std::get<int>(BIH[i + 1]) / 3, std::get<float>(BForceC[std::get<int>(BIH[i + 2]) - 1]), std::get<float>(BEQV[std::get<int>(BIH[i + 2]) - 1]) );
     }
 }
 
@@ -67,8 +72,10 @@ void simulation::spring_force(int atom1, int atom2, float k, float eq){
     unit_vector(dmag, disp, dunit_vect);
 
     for(int i = 0; i < disp.size(); i ++){
-        forces[atom2 * 3 + i] += -0.5 * (-k * (disp[i] - eq * dunit_vect[i]));
-        forces[atom1 * 3 + i] += -forces[atom2 * 3 + i];
+        float force = -0.5 * (-k * (disp[i] - eq * dunit_vect[i]));
+        forces[atom2 * 3 + i] += force;
+        forces[atom1 * 3 + i] -= force;
+
     }
 
 }
@@ -106,7 +113,7 @@ for(int atom = 0; atom < coord->Acoords.size(); atom++){
 forces.assign(forces.size(), 0);
 force_additions();
 for(int atom = 0; atom < velocities.size(); atom++){
-   velocities[atom] = velocities[atom] + forces[atom]*step_size / (2 * std::get<float>(Mass[atom/(int)3])  );//6.02214086e+26
+   velocities[atom] = velocities[atom] + forces[atom]*step_size / (2 * std::get<float>(Mass[atom/(int)3]) );//6.02214086e+26
 }
 
 
