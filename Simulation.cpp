@@ -7,6 +7,7 @@
 #include "Sim.h"
 #include <math.h>
 #include <thread>
+#include <iomanip>
 
 simulation::simulation(Environment& temp1, parm& temp2, float step){
 
@@ -22,21 +23,17 @@ simulation::simulation(Environment& temp1, parm& temp2, float step){
 
 
 void simulation::update_coord(float step_size, int frames){
+    int counting = 0;
     for(int i = 0; i < frames; i++){
         VerletAlg(step_size);
-        if(i % 5000 == 0) {
+        
+        if(i % 20 == 0) {
             std::cout << i << std::endl;
-            std::cout << "velocities: "<< velocities[15] << " | " << velocities[16] << " | " << velocities[17] <<std::endl;
-            //std::cout << "velocities: "<< velocities[18] << " | " << velocities[19] << " | " << velocities[20] <<std::endl;
-            std::cout << "Forces: "<< forces[15] << " | " << forces[16] << " | " << forces[17] <<std::endl;
-            //std::cout << "Forces: "<< forces[18] << " | " << forces[19] << " | " << forces[20] <<std::endl;
-            //std::cout << "coords: "<< coord->Acoords[9] << " | " << coord->Acoords[10] << " | " << coord->Acoords[11] <<std::endl;
-            std::cout << "coords: "<< coord->Acoords[15] << " | " << coord->Acoords[16] << " | " << coord->Acoords[17] <<std::endl;
+            exports(counting);
+            counting += 1;
 
         }
-        //std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
-
 }
 
 void simulation::force_additions(){ //all forces on protien for bond/FF interactions
@@ -121,8 +118,22 @@ for(int atom = 0; atom < velocities.size(); atom++){
 
 void simulation::exports(int count){
     std::fstream temp_file;
-    temp_file.open("coord_data/" + std::to_string(count), std::ios::out);
+    temp_file.open("coord_data/temp.crd", std::ios::out);
+    std::unordered_map<std::string, std::vector<T> >::iterator nm = top->values.find("ATOM_NAME");
+        std::vector<T>& name = nm->second;
+    temp_file << std::left << std::setw(20) << "title" << "\n";
+    std::cout << count << std::endl;
     for(int i = 0; i < coord->Acoords.size() - 1; i+=3){
-        temp_file << std::to_string(coord->Acoords[i]) << " " << std::to_string(coord->Acoords[i+1]) << " " << std::to_string(coord->Acoords[i+2]) << "\n";
+        temp_file << "ATOM "
+        << std::right << std::setw(5) << i/3 + 1 
+        << std::left << std::setw(4) << std::get<std::string>(name[i/3])
+        << "    "
+        << std::right << std::setw(3) << i/20 + 1
+        << "     "
+        << std::fixed << std::setprecision(3)
+        << std::setw(8) << (coord->Acoords[i]) << std::setw(8) << (coord->Acoords[i+1]) << std::setw(8) << (coord->Acoords[i+2]) << "\n";
     }
 }
+
+
+

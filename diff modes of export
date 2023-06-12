@@ -1,0 +1,13 @@
+<< std::fixed << std::setprecision(3) << std::setw(8) << coord->Acoords[i]
+             << std::fixed << std::setprecision(3) << std::setw(8) << coord->Acoords[i+1]
+             << std::fixed << std::setprecision(3) << std::setw(8) << coord->Acoords[i+2] << "\n";
+             
+             
+             << "ATOM "
+        << std::right << std::setw(5) << i/3 + 1 
+        << std::left << std::setw(4) << std::get<std::string>(name[i/3])
+        << "    "
+        << std::right << std::setw(3) << i/20 + 1
+        << "     "
+        << std::fixed << std::setprecision(3)
+        << std::setw(8) << (coord->Acoords[i]) << std::setw(8) << (coord->Acoords[i+1]) << std::setw(8) << (coord->Acoords[i+2]) << "\n";

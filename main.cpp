@@ -15,7 +15,7 @@ parm test("output.parm7");
 simulation small_probe(PISUM_SATIVUM, test, 1);
 
 small_probe.force_additions();
-small_probe.update_coord(0.0001, 10000000);
+small_probe.update_coord(0.0001, 20);
 
 
 
@@ -23,3 +23,8 @@ std::cout<< "Completed!" << std::endl;
 
 return 0;
 }
+
+
+
+
+
