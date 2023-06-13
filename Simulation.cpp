@@ -27,9 +27,10 @@ void simulation::update_coord(float step_size, int frames){
     for(int i = 0; i < frames; i++){
         VerletAlg(step_size);
         
-        if(i % 20 == 0) {
+        if(i % 1 == 0) {
             std::cout << i << std::endl;
-            exports(counting);
+            std::cout << "forces: " << forces[3] << " " << forces[4] << " " << forces[5] << std::endl;
+            //exports(counting);
             counting += 1;
 
         }
@@ -71,8 +72,13 @@ void simulation::force_additions(){ //all forces on protien for bond/FF interact
 
     std::unordered_map<std::string, std::vector<T> >::iterator aev = top->values.find("ANGLE_EQUIL_VALUE");
         std::vector<T>& AEQV = aev->second;
-    for(int i = 0; i < AWoutH.size() - 1; i+=4){ //BWoutH.size()
+    for(int i = 0; i < AWoutH.size() - 1; i+=4){
         angle_force( std::get<int>(AWoutH[i]) / 4,std::get<int>(AWoutH[i + 1]) / 4, std::get<int>(AWoutH[i + 2]) / 4, std::get<float>(AForceC[std::get<int>(AWoutH[i + 3]) - 1]), std::get<float>(AEQV[std::get<int>(AWoutH[i + 3]) - 1]));
+
+    }
+
+    for(int i = 0; i < AIH.size() - 1; i+=4){ 
+        angle_force( std::get<int>(AIH[i]) / 4,std::get<int>(AIH[i + 1]) / 4, std::get<int>(AIH[i + 2]) / 4, std::get<float>(AForceC[std::get<int>(AIH[i + 3]) - 1]), std::get<float>(AEQV[std::get<int>(AIH[i + 3]) - 1]));
 
     }
 
@@ -81,16 +87,40 @@ void simulation::force_additions(){ //all forces on protien for bond/FF interact
 
 void simulation::angle_force(int atom1, int atom2, int atom3, float k, float eq){ //this needs to be optimized so as not to make disp and mags two times
     std::vector<float> disp1, disp2;
-    displacement_vect(disp1, atom2, atom1);
-    displacement_vect(disp2, atom2, atom3);
+    displacement_vect(disp1, atom1, atom2);
+    displacement_vect(disp2, atom3, atom2);
     
+    float magba, magbc;
+    magnitude(disp1, magba);
+    magnitude(disp2, magbc);
+    std::cout << magba << " " << magbc << std::endl;
+    std::vector<float> unitv_ba, unitv_bc;
+    unit_vector(magba, disp1, unitv_ba);
+    unit_vector(magbc, disp2, unitv_bc);
+    for(int i = 0; i < 3; i++){
+        //std::cout<< unitv_ba[i] << " " << unitv_bc[i] << std::endl;
+    }
 
     float theta; 
     theta_from_dot(atom1, atom2, atom3, theta);
-    float angforce = 0.5 * (k*(theta - eq));
-    forces[atom1 * 3]
 
+    std::vector<float> c_unit_vect; //currently cross product vector
+    float magAxC;
+    cross(unitv_ba, unitv_bc, c_unit_vect);
+    magnitude(c_unit_vect, magAxC);
+
+    for(int i = 0; i < c_unit_vect.size(); i++){
+        c_unit_vect[i] = c_unit_vect[i] / magAxC; 
+    }
+    // c_unit_vect is now the unit vector of the cross product vector
+
+    for(int i = 0; i < disp1.size(); i ++){
+        float force = 0.5 * (-k * (theta - eq)) * c_unit_vect[i];
+        forces[atom3 * 3 + i] += force;
+        forces[atom1 * 3 + i] -= force;
 }
+}
+
 
 void simulation::theta_from_dot(int& atom1, int& atom2, int& atom3, float& theta){
     std::vector<float> disp1, disp2;
@@ -107,6 +137,13 @@ void simulation::theta_from_dot(int& atom1, int& atom2, int& atom3, float& theta
     
     theta = acos(dotac/(magba*magbc));
 
+
+}
+void simulation::cross(std::vector<float>& vect1, std::vector<float>& vect2, std::vector<float>& cprod){
+
+    cprod.push_back(vect1[1] * vect2[2] - vect1[2] * vect2[1]);
+    cprod.push_back(- (vect1[0] * vect2[2] - vect1[2] * vect2[0]));
+    cprod.push_back(vect1[0] * vect2[1] - vect1[1] * vect2[0]);
 
 }
 
