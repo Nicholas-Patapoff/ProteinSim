@@ -27,7 +27,7 @@ void simulation::update_coord(float step_size, int frames){
     for(int i = 0; i < frames; i++){
         VerletAlg(step_size);
         
-        if(i % 5000 == 0) {
+        if(i % 1 == 0) {
             std::cout << i << std::endl;
             std::cout << "vel: " << velocities[18] << " " << velocities[19] << " " << velocities[20] << std::endl;
             std::cout << "vel: " << velocities[21] << " " << velocities[22] << " " << velocities[23] << std::endl;
@@ -223,21 +223,19 @@ for(int atom = 0; atom < velocities.size(); atom++){
 
 void simulation::exports(int count){
     std::fstream temp_file;
-    temp_file.open("coord_data/temp.crd", std::ios::out);
-    std::unordered_map<std::string, std::vector<T> >::iterator nm = top->values.find("ATOM_NAME");
-        std::vector<T>& name = nm->second;
+    temp_file.open("temp.crd", std::ios::out);
+    if(!temp_file.is_open()){
+        std::cout << "failed" << std::endl;
+    }
     temp_file << std::left << std::setw(20) << "title" << "\n";
     std::cout << count << std::endl;
-    for(int i = 0; i < coord->Acoords.size() - 1; i+=3){
-        temp_file << "ATOM "
-        << std::right << std::setw(5) << i/3 + 1 
-        << std::left << std::setw(4) << std::get<std::string>(name[i/3])
-        << "    "
-        << std::right << std::setw(3) << i/20 + 1
-        << "     "
-        << std::fixed << std::setprecision(3)
-        << std::setw(8) << (coord->Acoords[i]) << std::setw(8) << (coord->Acoords[i+1]) << std::setw(8) << (coord->Acoords[i+2]) << "\n";
-    }
+    for(int i = 1; i < coord->Acoords.size(); i++){
+
+        temp_file << std::fixed << std::right << std::setw(8) << std::setprecision(3) << (coord->Acoords[i - 1]);
+        if(i % 9 == 0){
+            temp_file << std::endl;
+        }
+            }
 }
 
 
