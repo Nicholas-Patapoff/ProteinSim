@@ -79,9 +79,12 @@ void simulation::force_additions(){ //all forces on protien for bond/FF interact
     
 }
 
-void simulation::angle_force(int atom1, int atom2, int atom3, float k, float eq){
-    std::vector<float> dispab;
-    std::vector<float> dunit_vect;
+void simulation::angle_force(int atom1, int atom2, int atom3, float k, float eq){ //this needs to be optimized so as not to make disp and mags two times
+    std::vector<float> disp1, disp2;
+    displacement_vect(disp1, atom2, atom1);
+    displacement_vect(disp2, atom2, atom3);
+    
+
     float theta; 
     theta_from_dot(atom1, atom2, atom3, theta);
     float angforce = 0.5 * (k*(theta - eq));
@@ -90,12 +93,18 @@ void simulation::angle_force(int atom1, int atom2, int atom3, float k, float eq)
 }
 
 void simulation::theta_from_dot(int& atom1, int& atom2, int& atom3, float& theta){
+    std::vector<float> disp1, disp2;
+    displacement_vect(disp1, atom2, atom1);
+    displacement_vect(disp2, atom2, atom3);
+    float magba;
+    magnitude(disp1, magba);
+    float magbc;
+    magnitude(disp2, magbc);
     float dotac = 0;
     dot(atom1, atom2, dotac);
-    float magba;
-    magnitude(atom1, atom2, magba);
-    float magbc;
-    magnitude(atom2, atom3, magbc);
+    std::vector<float> ba_unitvect, bc_unitvect;
+
+    
     theta = acos(dotac/(magba*magbc));
 
 
@@ -139,6 +148,7 @@ void simulation::magnitude(std::vector<float>& object, float& mag){
     temp = std::sqrt(temp);
     mag = temp;
 }
+
 
 void simulation::displacement_vect(std::vector<float>& d, int atom1, int atom2){
     for(int i = 0; i < 3; i++){
