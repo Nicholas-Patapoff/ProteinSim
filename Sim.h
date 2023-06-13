@@ -16,7 +16,7 @@ void displacement_vect(std::vector<float>& d, int atom1, int atom2);
 void magnitude(std::vector<float>& object, float& mag);
 void unit_vector(float& mag, std::vector<float> d, std::vector<float>& unitv);
 void theta_from_dot(int& atom1, int& atom2, int& atom3, float& theta);
-void dot(int& atom1, int& atom2, float& val);
+void dot(std::vector<float>& disp1, std::vector<float>& disp2, float& val);
 void cross(std::vector<float>& vect1, std::vector<float>& vect2, std::vector<float>& cprod);
 using T = std::variant<int, float, std::string>;
 public:

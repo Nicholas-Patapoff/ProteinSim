@@ -88,6 +88,8 @@
         "random": "cpp",
         "numbers": "cpp",
         "semaphore": "cpp",
-        "stop_token": "cpp"
+        "stop_token": "cpp",
+        "xlocmon": "cpp",
+        "xloctime": "cpp"
     }
 }

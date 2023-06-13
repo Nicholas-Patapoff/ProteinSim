@@ -27,9 +27,12 @@ void simulation::update_coord(float step_size, int frames){
     for(int i = 0; i < frames; i++){
         VerletAlg(step_size);
         
-        if(i % 1 == 0) {
+        if(i % 5000 == 0) {
             std::cout << i << std::endl;
-            std::cout << "forces: " << forces[3] << " " << forces[4] << " " << forces[5] << std::endl;
+            std::cout << "vel: " << velocities[18] << " " << velocities[19] << " " << velocities[20] << std::endl;
+            std::cout << "vel: " << velocities[21] << " " << velocities[22] << " " << velocities[23] << std::endl;
+            std::cout << "forces: " << forces[18] << " " << forces[19] << " " << forces[20] << std::endl;
+            std::cout << "forces: " << forces[21] << " " << forces[22] << " " << forces[23] << std::endl;
             //exports(counting);
             counting += 1;
 
@@ -52,11 +55,11 @@ void simulation::force_additions(){ //all forces on protien for bond/FF interact
     std::unordered_map<std::string, std::vector<T> >::iterator bev = top->values.find("BOND_EQUIL_VALUE");
         std::vector<T>& BEQV = bev->second;
     for(int i = 0; i < BWoutH.size() - 1; i+=3){ //BWoutH.size()
-        spring_force( std::get<int>(BWoutH[i]) / 3,std::get<int>(BWoutH[i + 1]) / 3, std::get<float>(BForceC[std::get<int>(BWoutH[i + 2]) - 1]), std::get<float>(BEQV[std::get<int>(BWoutH[i + 2]) - 1]) );
+        //spring_force( std::get<int>(BWoutH[i]) / 3,std::get<int>(BWoutH[i + 1]) / 3, std::get<float>(BForceC[std::get<int>(BWoutH[i + 2]) - 1]), std::get<float>(BEQV[std::get<int>(BWoutH[i + 2]) - 1]) );
 
     }
     for(int i = 0; i < BIH.size(); i+=3){ // this is a bond which include hydrogen. I want to stiffen interaction so as to reduce computational complexity. I can set up a method for selecting a model and integrate it into there
-        spring_force( std::get<int>(BIH[i]) / 3,std::get<int>(BIH[i + 1]) / 3, std::get<float>(BForceC[std::get<int>(BIH[i + 2]) - 1]), std::get<float>(BEQV[std::get<int>(BIH[i + 2]) - 1]) );
+        //spring_force( std::get<int>(BIH[i]) / 3,std::get<int>(BIH[i + 1]) / 3, std::get<float>(BForceC[std::get<int>(BIH[i + 2]) - 1]), std::get<float>(BEQV[std::get<int>(BIH[i + 2]) - 1]) );
     }
 
 
@@ -73,12 +76,12 @@ void simulation::force_additions(){ //all forces on protien for bond/FF interact
     std::unordered_map<std::string, std::vector<T> >::iterator aev = top->values.find("ANGLE_EQUIL_VALUE");
         std::vector<T>& AEQV = aev->second;
     for(int i = 0; i < AWoutH.size() - 1; i+=4){
-        angle_force( std::get<int>(AWoutH[i]) / 4,std::get<int>(AWoutH[i + 1]) / 4, std::get<int>(AWoutH[i + 2]) / 4, std::get<float>(AForceC[std::get<int>(AWoutH[i + 3]) - 1]), std::get<float>(AEQV[std::get<int>(AWoutH[i + 3]) - 1]));
+        angle_force( std::get<int>(AWoutH[i]) / 3,std::get<int>(AWoutH[i + 1]) / 3, std::get<int>(AWoutH[i + 2]) / 3, std::get<float>(AForceC[std::get<int>(AWoutH[i + 3]) - 1]), std::get<float>(AEQV[std::get<int>(AWoutH[i + 3]) - 1]));
 
     }
 
     for(int i = 0; i < AIH.size() - 1; i+=4){ 
-        angle_force( std::get<int>(AIH[i]) / 4,std::get<int>(AIH[i + 1]) / 4, std::get<int>(AIH[i + 2]) / 4, std::get<float>(AForceC[std::get<int>(AIH[i + 3]) - 1]), std::get<float>(AEQV[std::get<int>(AIH[i + 3]) - 1]));
+        angle_force( std::get<int>(AIH[i]) / 3,std::get<int>(AIH[i + 1]) / 3, std::get<int>(AIH[i + 2]) / 3, std::get<float>(AForceC[std::get<int>(AIH[i + 3]) - 1]), std::get<float>(AEQV[std::get<int>(AIH[i + 3]) - 1]));
 
     }
 
@@ -93,16 +96,20 @@ void simulation::angle_force(int atom1, int atom2, int atom3, float k, float eq)
     float magba, magbc;
     magnitude(disp1, magba);
     magnitude(disp2, magbc);
-    std::cout << magba << " " << magbc << std::endl;
+
     std::vector<float> unitv_ba, unitv_bc;
     unit_vector(magba, disp1, unitv_ba);
     unit_vector(magbc, disp2, unitv_bc);
+    //std::cout<< unitv_ba[0] << " " << unitv_ba[1] << " " << unitv_ba[2] << std::endl;
+    //std::cout<< unitv_bc[0] << " " << unitv_bc[1] << " " << unitv_bc[2] << std::endl;
+
     for(int i = 0; i < 3; i++){
-        //std::cout<< unitv_ba[i] << " " << unitv_bc[i] << std::endl;
+       
     }
 
     float theta; 
     theta_from_dot(atom1, atom2, atom3, theta);
+    //std::cout << theta << std::endl;
 
     std::vector<float> c_unit_vect; //currently cross product vector
     float magAxC;
@@ -116,6 +123,9 @@ void simulation::angle_force(int atom1, int atom2, int atom3, float k, float eq)
 
     for(int i = 0; i < disp1.size(); i ++){
         float force = 0.5 * (-k * (theta - eq)) * c_unit_vect[i];
+        if(force >= 10000){
+            std::cout<< "blow up" << std::endl;
+        }
         forces[atom3 * 3 + i] += force;
         forces[atom1 * 3 + i] -= force;
 }
@@ -124,14 +134,14 @@ void simulation::angle_force(int atom1, int atom2, int atom3, float k, float eq)
 
 void simulation::theta_from_dot(int& atom1, int& atom2, int& atom3, float& theta){
     std::vector<float> disp1, disp2;
-    displacement_vect(disp1, atom2, atom1);
-    displacement_vect(disp2, atom2, atom3);
+    displacement_vect(disp1, atom1, atom2);
+    displacement_vect(disp2, atom3, atom2);
     float magba;
     magnitude(disp1, magba);
     float magbc;
     magnitude(disp2, magbc);
     float dotac = 0;
-    dot(atom1, atom2, dotac);
+    dot(disp1, disp2, dotac);
     std::vector<float> ba_unitvect, bc_unitvect;
 
     
@@ -147,9 +157,9 @@ void simulation::cross(std::vector<float>& vect1, std::vector<float>& vect2, std
 
 }
 
-void simulation::dot(int& atom1, int& atom2, float& val){
+void simulation::dot(std::vector<float>& disp1, std::vector<float>& disp2, float& val){
     for(int i = 0; i < 3; i++){
-        val += coord->Acoords[atom1 * 3 + i] * coord->Acoords[atom2 * 3 + i];
+        val += disp1[i] * disp2[i];
     }
 }
 
