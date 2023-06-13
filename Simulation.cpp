@@ -37,10 +37,11 @@ void simulation::update_coord(float step_size, int frames){
 }
 
 void simulation::force_additions(){ //all forces on protien for bond/FF interactions
-    //find the value vector for all bonds that do not include hydrogen
+
+    //bond forces
     std::unordered_map<std::string, std::vector<T> >::iterator bwh = top->values.find("BONDS_WITHOUT_HYDROGEN");
         std::vector<T>& BWoutH = bwh->second;
-    //find the value vector for all bonds that inolve atleast 1 hydrogen
+    
     std::unordered_map<std::string, std::vector<T> >::iterator bih = top->values.find("BONDS_INC_HYDROGEN");
         std::vector<T>& BIH = bih->second;
 
@@ -56,8 +57,55 @@ void simulation::force_additions(){ //all forces on protien for bond/FF interact
     for(int i = 0; i < BIH.size(); i+=3){ // this is a bond which include hydrogen. I want to stiffen interaction so as to reduce computational complexity. I can set up a method for selecting a model and integrate it into there
         spring_force( std::get<int>(BIH[i]) / 3,std::get<int>(BIH[i + 1]) / 3, std::get<float>(BForceC[std::get<int>(BIH[i + 2]) - 1]), std::get<float>(BEQV[std::get<int>(BIH[i + 2]) - 1]) );
     }
+
+
+    //angle forces
+    std::unordered_map<std::string, std::vector<T> >::iterator awh = top->values.find("ANGLES_WITHOUT_HYDROGEN");
+        std::vector<T>& AWoutH = awh->second;
+
+    std::unordered_map<std::string, std::vector<T> >::iterator aih = top->values.find("ANGLES_INC_HYDROGEN");
+        std::vector<T>& AIH = aih->second;
+
+    std::unordered_map<std::string, std::vector<T> >::iterator afc = top->values.find("ANGLE_FORCE_CONSTANT");
+        std::vector<T>& AForceC = afc->second;
+
+    std::unordered_map<std::string, std::vector<T> >::iterator aev = top->values.find("ANGLE_EQUIL_VALUE");
+        std::vector<T>& AEQV = aev->second;
+    for(int i = 0; i < AWoutH.size() - 1; i+=4){ //BWoutH.size()
+        angle_force( std::get<int>(AWoutH[i]) / 4,std::get<int>(AWoutH[i + 1]) / 4, std::get<int>(AWoutH[i + 2]) / 4, std::get<float>(AForceC[std::get<int>(AWoutH[i + 3]) - 1]), std::get<float>(AEQV[std::get<int>(AWoutH[i + 3]) - 1]));
+
+    }
+
+    
 }
 
+void simulation::angle_force(int atom1, int atom2, int atom3, float k, float eq){
+    std::vector<float> dispab;
+    std::vector<float> dunit_vect;
+    float theta; 
+    theta_from_dot(atom1, atom2, atom3, theta);
+    float angforce = 0.5 * (k*(theta - eq));
+    forces[atom1 * 3]
+
+}
+
+void simulation::theta_from_dot(int& atom1, int& atom2, int& atom3, float& theta){
+    float dotac = 0;
+    dot(atom1, atom2, dotac);
+    float magba;
+    magnitude(atom1, atom2, magba);
+    float magbc;
+    magnitude(atom2, atom3, magbc);
+    theta = acos(dotac/(magba*magbc));
+
+
+}
+
+void simulation::dot(int& atom1, int& atom2, float& val){
+    for(int i = 0; i < 3; i++){
+        val += coord->Acoords[atom1 * 3 + i] * coord->Acoords[atom2 * 3 + i];
+    }
+}
 
 void simulation::spring_force(int atom1, int atom2, float k, float eq){
     std::vector<float> disp;
