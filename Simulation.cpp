@@ -27,12 +27,24 @@ void simulation::update_coord(float step_size, int frames){
     for(int i = 0; i < frames; i++){
         VerletAlg(step_size);
         
-        if(i % 1 == 0) {
+        if(i % 50 == 0) {
             std::cout << i << std::endl;
+            std::cout << "vel: " << velocities[6] << " " << velocities[7] << " " << velocities[8] << std::endl;
             std::cout << "vel: " << velocities[18] << " " << velocities[19] << " " << velocities[20] << std::endl;
             std::cout << "vel: " << velocities[21] << " " << velocities[22] << " " << velocities[23] << std::endl;
-            std::cout << "forces: " << forces[18] << " " << forces[19] << " " << forces[20] << std::endl;
-            std::cout << "forces: " << forces[21] << " " << forces[22] << " " << forces[23] << std::endl;
+            std::cout << "forces6: " << forces[6] << " " << forces[7] << " " << forces[8] << std::endl;
+            std::cout << "forces18: " << forces[18] << " " << forces[19] << " " << forces[20] << std::endl;
+            std::cout << "forces21: " << forces[21] << " " << forces[22] << " " << forces[23] << std::endl;
+            float total_f = 0;
+            for(int i = 0; i < forces.size(); i++){
+                total_f += forces[i];
+            }
+            if(total_f != 0){
+                //std::cout << "not all add to 0" << std::endl;
+                //std::cout << total_f << std::endl;
+            }
+                    std::this_thread::sleep_for(std::chrono::milliseconds(25));
+
             //exports(counting);
             counting += 1;
 
@@ -55,11 +67,11 @@ void simulation::force_additions(){ //all forces on protien for bond/FF interact
     std::unordered_map<std::string, std::vector<T> >::iterator bev = top->values.find("BOND_EQUIL_VALUE");
         std::vector<T>& BEQV = bev->second;
     for(int i = 0; i < BWoutH.size() - 1; i+=3){ //BWoutH.size()
-        //spring_force( std::get<int>(BWoutH[i]) / 3,std::get<int>(BWoutH[i + 1]) / 3, std::get<float>(BForceC[std::get<int>(BWoutH[i + 2]) - 1]), std::get<float>(BEQV[std::get<int>(BWoutH[i + 2]) - 1]) );
+        spring_force( std::get<int>(BWoutH[i]) / 3,std::get<int>(BWoutH[i + 1]) / 3, std::get<float>(BForceC[std::get<int>(BWoutH[i + 2]) - 1]), std::get<float>(BEQV[std::get<int>(BWoutH[i + 2]) - 1]) );
 
     }
     for(int i = 0; i < BIH.size(); i+=3){ // this is a bond which include hydrogen. I want to stiffen interaction so as to reduce computational complexity. I can set up a method for selecting a model and integrate it into there
-        //spring_force( std::get<int>(BIH[i]) / 3,std::get<int>(BIH[i + 1]) / 3, std::get<float>(BForceC[std::get<int>(BIH[i + 2]) - 1]), std::get<float>(BEQV[std::get<int>(BIH[i + 2]) - 1]) );
+        spring_force( std::get<int>(BIH[i]) / 3,std::get<int>(BIH[i + 1]) / 3, std::get<float>(BForceC[std::get<int>(BIH[i + 2]) - 1]), std::get<float>(BEQV[std::get<int>(BIH[i + 2]) - 1]) );
     }
 
 
@@ -75,7 +87,7 @@ void simulation::force_additions(){ //all forces on protien for bond/FF interact
 
     std::unordered_map<std::string, std::vector<T> >::iterator aev = top->values.find("ANGLE_EQUIL_VALUE");
         std::vector<T>& AEQV = aev->second;
-    for(int i = 0; i < AWoutH.size() - 1; i+=4){
+    for(int i = 0; i < AWoutH.size(); i+=4){
         angle_force( std::get<int>(AWoutH[i]) / 3,std::get<int>(AWoutH[i + 1]) / 3, std::get<int>(AWoutH[i + 2]) / 3, std::get<float>(AForceC[std::get<int>(AWoutH[i + 3]) - 1]), std::get<float>(AEQV[std::get<int>(AWoutH[i + 3]) - 1]));
 
     }
@@ -89,45 +101,36 @@ void simulation::force_additions(){ //all forces on protien for bond/FF interact
 }
 
 void simulation::angle_force(int atom1, int atom2, int atom3, float k, float eq){ //this needs to be optimized so as not to make disp and mags two times
-    std::vector<float> disp1, disp2;
+    std::vector<float> disp1, disp2, dispac;
     displacement_vect(disp1, atom1, atom2);
     displacement_vect(disp2, atom3, atom2);
+    displacement_vect(dispac, atom1, atom3);
     
-    float magba, magbc;
+    float magba, magbc, magac;
     magnitude(disp1, magba);
     magnitude(disp2, magbc);
+    magnitude(dispac, magac);
 
-    std::vector<float> unitv_ba, unitv_bc;
+    std::vector<float> unitv_ba, unitv_bc, unitv_ac;
     unit_vector(magba, disp1, unitv_ba);
     unit_vector(magbc, disp2, unitv_bc);
-    //std::cout<< unitv_ba[0] << " " << unitv_ba[1] << " " << unitv_ba[2] << std::endl;
-    //std::cout<< unitv_bc[0] << " " << unitv_bc[1] << " " << unitv_bc[2] << std::endl;
-
-    for(int i = 0; i < 3; i++){
-       
-    }
+    unit_vector(magac, dispac, unitv_ac);
 
     float theta; 
     theta_from_dot(atom1, atom2, atom3, theta);
-    //std::cout << theta << std::endl;
 
-    std::vector<float> c_unit_vect; //currently cross product vector
-    float magAxC;
-    cross(unitv_ba, unitv_bc, c_unit_vect);
-    magnitude(c_unit_vect, magAxC);
+    std::vector<float> force_ba, force_bc;
+    float force =  -0.5 * (-k * ((theta - eq)));
 
-    for(int i = 0; i < c_unit_vect.size(); i++){
-        c_unit_vect[i] = c_unit_vect[i] / magAxC; 
-    }
-    // c_unit_vect is now the unit vector of the cross product vector
+for(int i = 0; i < unitv_ba.size(); i ++){
+    force_ba.push_back(force * unitv_ba[i]);
+    force_bc.push_back(force * unitv_bc[i]);
+}
 
-    for(int i = 0; i < disp1.size(); i ++){
-        float force = 0.5 * (-k * (theta - eq)) * c_unit_vect[i];
-        if(force >= 10000){
-            std::cout<< "blow up" << std::endl;
-        }
-        forces[atom3 * 3 + i] += force;
-        forces[atom1 * 3 + i] -= force;
+    for(int i = 0; i < unitv_ba.size(); i ++){
+    forces[atom1 * 3 + i] += force_ba[i];
+    forces[atom2 * 3 + i] -= (force_ba[i] + force_bc[i]);
+    forces[atom3 * 3 + i] += force_bc[i];
 }
 }
 
@@ -152,7 +155,7 @@ void simulation::theta_from_dot(int& atom1, int& atom2, int& atom3, float& theta
 void simulation::cross(std::vector<float>& vect1, std::vector<float>& vect2, std::vector<float>& cprod){
 
     cprod.push_back(vect1[1] * vect2[2] - vect1[2] * vect2[1]);
-    cprod.push_back(- (vect1[0] * vect2[2] - vect1[2] * vect2[0]));
+    cprod.push_back(-(vect1[0] * vect2[2] - vect1[2] * vect2[0]));
     cprod.push_back(vect1[0] * vect2[1] - vect1[1] * vect2[0]);
 
 }
