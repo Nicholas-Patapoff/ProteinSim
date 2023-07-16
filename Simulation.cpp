@@ -41,9 +41,9 @@ void simulation::update_coord(float step_size, int frames){
             }
             if(total_f != 0){
                 //std::cout << "not all add to 0" << std::endl;
-                //std::cout << total_f << std::endl;
+                std::cout << total_f << std::endl;
             }
-                    std::this_thread::sleep_for(std::chrono::milliseconds(25));
+                    std::this_thread::sleep_for(std::chrono::milliseconds(0));
 
             //exports(counting);
             counting += 1;
@@ -147,7 +147,7 @@ void simulation::theta_from_dot(int& atom1, int& atom2, int& atom3, float& theta
     dot(disp1, disp2, dotac);
     std::vector<float> ba_unitvect, bc_unitvect;
 
-    
+
     theta = acos(dotac/(magba*magbc));
 
 
