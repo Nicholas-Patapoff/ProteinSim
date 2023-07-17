@@ -101,37 +101,35 @@ void simulation::force_additions(){ //all forces on protien for bond/FF interact
 }
 
 void simulation::angle_force(int atom1, int atom2, int atom3, float k, float eq){ //this needs to be optimized so as not to make disp and mags two times
+    //first find the change of potential with respect the change of angle : 2k(thetaEQ - current_theta)
+    //then find the change of potential with respect to the change of bond length
+    // we must then make a nomalized vector which is in plane to atoms 1,2,3 and points in a direction orth to vector 1-2, and then 2-3
+    // from there we can apply forces via F12 = - du/dr dot orth_vect12 which: -2k(thetaEQ - current_theta)/mag(vector1-2) dot orth_vect12.
+    //F23 is the same 
+    //then take the total of both as a negative ( - f12 - f23) and then we obtain force on atom 2. since -FA + -FC = FB;
+    
     std::vector<float> disp1, disp2, dispac;
     displacement_vect(disp1, atom1, atom2);
     displacement_vect(disp2, atom3, atom2);
     displacement_vect(dispac, atom1, atom3);
     
-    float magba, magbc, magac;
+    float magba, magbc;
     magnitude(disp1, magba);
     magnitude(disp2, magbc);
-    magnitude(dispac, magac);
 
-    std::vector<float> unitv_ba, unitv_bc, unitv_ac;
+    std::vector<float> unitv_ba, unitv_bc;
     unit_vector(magba, disp1, unitv_ba);
     unit_vector(magbc, disp2, unitv_bc);
-    unit_vector(magac, dispac, unitv_ac);
 
     float theta; 
     theta_from_dot(atom1, atom2, atom3, theta);
+    std::cout<< theta << std::endl;
 
     std::vector<float> force_ba, force_bc;
-    float force =  -0.5 * (-k * ((theta - eq)));
 
-for(int i = 0; i < unitv_ba.size(); i ++){
-    force_ba.push_back(force * unitv_ba[i]);
-    force_bc.push_back(force * unitv_bc[i]);
-}
 
-    for(int i = 0; i < unitv_ba.size(); i ++){
-    forces[atom1 * 3 + i] += force_ba[i];
-    forces[atom2 * 3 + i] -= (force_ba[i] + force_bc[i]);
-    forces[atom3 * 3 + i] += force_bc[i];
-}
+
+    
 }
 
 
