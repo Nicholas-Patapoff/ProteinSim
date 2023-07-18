@@ -134,8 +134,8 @@ void simulation::angle_force(int atom1, int atom2, int atom3, float k, float eq)
 
     float force_ba, force_bc;
     for(int i = 0; i < unit_inp_ba.size(); i++){
-        force_ba = 2 * k * (eq - theta)/magba * unit_inp_ba[i];
-        force_bc = -2 * k * (eq - theta)/magbc * unit_inp_bc[i];
+        force_ba =  k * (eq - theta)/magba * unit_inp_ba[i];
+        force_bc =  -k * (eq - theta)/magbc * unit_inp_bc[i];
         forces[atom1 * 3 + i] += force_ba;
         forces[atom3 * 3 + i] += force_bc;
         forces[atom2 * 3 + i] += -force_ba - force_bc;
