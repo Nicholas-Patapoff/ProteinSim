@@ -27,7 +27,7 @@ void simulation::update_coord(float step_size, int frames){
     for(int i = 0; i < frames; i++){
         VerletAlg(step_size);
         
-        if(i % 50 == 0) {
+        if(i % 5000 == 0) {
             std::cout << i << std::endl;
             std::cout << "vel: " << velocities[6] << " " << velocities[7] << " " << velocities[8] << std::endl;
             std::cout << "vel: " << velocities[18] << " " << velocities[19] << " " << velocities[20] << std::endl;
@@ -43,7 +43,7 @@ void simulation::update_coord(float step_size, int frames){
                 //std::cout << "not all add to 0" << std::endl;
                 std::cout << total_f << std::endl;
             }
-                    std::this_thread::sleep_for(std::chrono::milliseconds(0));
+                    //std::this_thread::sleep_for(std::chrono::milliseconds(0));
 
             //exports(counting);
             counting += 1;
@@ -112,24 +112,36 @@ void simulation::angle_force(int atom1, int atom2, int atom3, float k, float eq)
     displacement_vect(disp1, atom1, atom2);
     displacement_vect(disp2, atom3, atom2);
     displacement_vect(dispac, atom1, atom3);
-    
-    float magba, magbc;
+
+    std::vector<float> orth_abc, inp_ba, inp_bc;
+    cross(disp1, disp2, orth_abc);
+    cross(disp1, orth_abc, inp_ba);
+    cross(disp2, orth_abc, inp_bc);
+
+    float magba, magbc, mag_inp_ba, mag_inp_bc;
     magnitude(disp1, magba);
     magnitude(disp2, magbc);
+    magnitude(inp_ba, mag_inp_ba);
+    magnitude(inp_bc, mag_inp_bc);
 
-    std::vector<float> unitv_ba, unitv_bc;
-    unit_vector(magba, disp1, unitv_ba);
-    unit_vector(magbc, disp2, unitv_bc);
+    std::vector<float> unit_inp_ba, unit_inp_bc;
+    unit_vector(mag_inp_ba, inp_ba, unit_inp_ba);
+    unit_vector(mag_inp_bc, inp_bc, unit_inp_bc);
 
     float theta; 
     theta_from_dot(atom1, atom2, atom3, theta);
-    std::cout<< theta << std::endl;
+    //std::cout << "theta: " <<  theta * 180 / 3.14 << " vs eq: " << eq * 180 / 3.14 << std::endl;
 
-    std::vector<float> force_ba, force_bc;
+    float force_ba, force_bc;
+    for(int i = 0; i < unit_inp_ba.size(); i++){
+        force_ba = 2 * k * (eq - theta)/magba * unit_inp_ba[i];
+        force_bc = -2 * k * (eq - theta)/magbc * unit_inp_bc[i];
+        forces[atom1 * 3 + i] += force_ba;
+        forces[atom3 * 3 + i] += force_bc;
+        forces[atom2 * 3 + i] += -force_ba - force_bc;
+        
+    }    
 
-
-
-    
 }
 
 
