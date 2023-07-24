@@ -12,6 +12,7 @@ class simulation{
 private:
 std::unique_ptr<Environment> coord;
 std::unique_ptr<parm> top;
+std::fstream temp_file;
 void displacement_vect(std::vector<float>& d, int atom1, int atom2);
 void magnitude(std::vector<float>& object, float& mag);
 void unit_vector(float& mag, std::vector<float> d, std::vector<float>& unitv);
@@ -19,6 +20,7 @@ void theta_from_dot(int& atom1, int& atom2, int& atom3, float& theta);
 void dot(std::vector<float>& disp1, std::vector<float>& disp2, float& val);
 void cross(std::vector<float>& vect1, std::vector<float>& vect2, std::vector<float>& cprod);
 using T = std::variant<int, float, std::string>;
+
 public:
 std::vector<float> velocities;
 std::vector<float> forces;
