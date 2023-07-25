@@ -21,7 +21,7 @@ simulation::simulation(Environment& temp1, parm& temp2, float step){
     
 
 
-    temp_file.open("temp.crd", std::ios::out);
+    temp_file.open("newtemp.crd", std::ios::out);
     }
 
 
@@ -30,7 +30,7 @@ void simulation::update_coord(float step_size, int frames){
     for(int i = 0; i < frames; i++){
         VerletAlg(step_size);
         
-        if(i % 5 == 0) {
+        if(i % 5000 == 0) {
             std::cout << i << std::endl;
             std::cout << "vel: " << velocities[6] << " " << velocities[7] << " " << velocities[8] << std::endl;
             std::cout << "vel: " << velocities[18] << " " << velocities[19] << " " << velocities[20] << std::endl;
@@ -243,6 +243,7 @@ void simulation::exports(int count){
             temp_file << std::endl;
         }
         temp_file << std::fixed << std::right << std::setw(8) << std::setprecision(3) << (coord->Acoords[i]);
+        /*
         if(i == coord->Acoords.size() - 1){
             for(int y = i + 1; y < i + 4; y++){
                 if(i % 10 == 0 ){
@@ -252,6 +253,8 @@ void simulation::exports(int count){
             }
             
         }
+        */
+        
     }
     temp_file << std::endl;
 
