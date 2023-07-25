@@ -1,0 +1,215 @@
+log started: Tue Jul 25 12:30:54 2023
+
+Log file: ./leap.log
+>> #
+>> # ----- leaprc for loading the modified amino acids AZF,CYF,ALY,CNX,MSE forcefield
+>> # ----- support for glycans with ff19sb
+>> # ----- NOTE: this is designed for PDB format 3!
+>> #
+>> #	load atom type hybridizations
+>> #
+>> addAtomTypes {
+>>         { "MC"  "C" "sp2" }  # CNX
+>>         { "YC"  "C" "sp3" }  #  ^ 
+>>         { "NR"  "N" "sp2" }  #  |
+>>         { "RO"  "O" "sp2" }  #  |
+>>         { "SX"  "S" "sp3" }  #  |
+>> 	{ "8C"  "C" "sp3" }  # ALY
+>> 	{ "AC"  "C" "sp2" }  # AZF
+>>         { "NG"  "N" "sp2" }  # AZF
+>>         { "NF"  "N" "sp"  }  # AZF
+>> 	{ "GC"  "C" "sp2" }  # CYF
+>> 	{ "CY"  "C" "sp"  }  # CYF
+>>         { "NY"  "N" "sp"  }  # CYF
+>> 	{ "SC"  "C" "sp3" }  # MSE
+>> 	{ "SE" "Se" "sp2" }  # MSE
+>> }
+
+/home/nich/miniconda3/bin/teLeap: Warning!
+atom type NF - unknown hybridization sp
+
+/home/nich/miniconda3/bin/teLeap: Warning!
+atom type CY - unknown hybridization sp
+
+/home/nich/miniconda3/bin/teLeap: Warning!
+atom type NY - unknown hybridization sp
+>> 
+>> #	Load the main parameter set.
+>> #
+>> frcmod19SBmodAA = loadamberparams frcmod.ff19SBmodAA
+Loading parameters: /home/nich/miniconda3/dat/leap/parm/frcmod.ff19SBmodAA
+Reading force field modification type file (frcmod)
+Reading title:
+Parameters for Modified Amino acids (Belfon & Simmerling) to be used with leaprc.protein.ff19SB
+(UNKNOWN ATOM TYPE: CY)
+(UNKNOWN ATOM TYPE: NY)
+(UNKNOWN ATOM TYPE: NF)
+(UNKNOWN ATOM TYPE: XC)
+>> #
+>> #	Load main chain and terminating amino acid libraries
+>> loadOff mod_amino19.lib
+Loading library: /home/nich/miniconda3/dat/leap/lib/mod_amino19.lib
+Loading: ALY
+Loading: AZF
+Loading: CNX
+Loading: CYF
+Loading: MSE
+>> 
+>> #
+>> #	Define the PDB name map for the amino acids
+>> #
+>> addPdbResMap {
+>>   { 0 "ALY" "NALY" } { 1 "ALY" "CALY" }
+>>   { 0 "AZF" "NAZF" } { 1 "AZF" "CAZF" }
+>>   { 0 "CYF" "NCYF" } { 1 "CYF" "CCYF" }
+>>   { 0 "CNX" "NCNX" } { 1 "CNX" "CCNX" }
+>>   { 0 "MSE" "NMSE" } { 1 "MSE" "CMSE" }
+>> }
+>> 
+>> #####
+>> 4II = AZF
+>> 4CF = CYF
+>> MTN = CNX
+> 
+> set default PBradii mbondi3
+Using ArgH and AspGluO modified Bondi2 radii
+log started: Tue Jul 25 12:36:37 2023
+
+Log file: ./leap.log
+>> #
+>> # ----- leaprc for loading the modified amino acids AZF,CYF,ALY,CNX,MSE forcefield
+>> # ----- support for glycans with ff19sb
+>> # ----- NOTE: this is designed for PDB format 3!
+>> #
+>> #	load atom type hybridizations
+>> #
+>> addAtomTypes {
+>>         { "MC"  "C" "sp2" }  # CNX
+>>         { "YC"  "C" "sp3" }  #  ^ 
+>>         { "NR"  "N" "sp2" }  #  |
+>>         { "RO"  "O" "sp2" }  #  |
+>>         { "SX"  "S" "sp3" }  #  |
+>> 	{ "8C"  "C" "sp3" }  # ALY
+>> 	{ "AC"  "C" "sp2" }  # AZF
+>>         { "NG"  "N" "sp2" }  # AZF
+>>         { "NF"  "N" "sp"  }  # AZF
+>> 	{ "GC"  "C" "sp2" }  # CYF
+>> 	{ "CY"  "C" "sp"  }  # CYF
+>>         { "NY"  "N" "sp"  }  # CYF
+>> 	{ "SC"  "C" "sp3" }  # MSE
+>> 	{ "SE" "Se" "sp2" }  # MSE
+>> }
+
+/home/nich/miniconda3/bin/teLeap: Warning!
+atom type NF - unknown hybridization sp
+
+/home/nich/miniconda3/bin/teLeap: Warning!
+atom type CY - unknown hybridization sp
+
+/home/nich/miniconda3/bin/teLeap: Warning!
+atom type NY - unknown hybridization sp
+>> 
+>> #	Load the main parameter set.
+>> #
+>> frcmod19SBmodAA = loadamberparams frcmod.ff19SBmodAA
+Loading parameters: /home/nich/miniconda3/dat/leap/parm/frcmod.ff19SBmodAA
+Reading force field modification type file (frcmod)
+Reading title:
+Parameters for Modified Amino acids (Belfon & Simmerling) to be used with leaprc.protein.ff19SB
+(UNKNOWN ATOM TYPE: CY)
+(UNKNOWN ATOM TYPE: NY)
+(UNKNOWN ATOM TYPE: NF)
+(UNKNOWN ATOM TYPE: XC)
+>> #
+>> #	Load main chain and terminating amino acid libraries
+>> loadOff mod_amino19.lib
+Loading library: /home/nich/miniconda3/dat/leap/lib/mod_amino19.lib
+Loading: ALY
+Loading: AZF
+Loading: CNX
+Loading: CYF
+Loading: MSE
+>> 
+>> #
+>> #	Define the PDB name map for the amino acids
+>> #
+>> addPdbResMap {
+>>   { 0 "ALY" "NALY" } { 1 "ALY" "CALY" }
+>>   { 0 "AZF" "NAZF" } { 1 "AZF" "CAZF" }
+>>   { 0 "CYF" "NCYF" } { 1 "CYF" "CCYF" }
+>>   { 0 "CNX" "NCNX" } { 1 "CNX" "CCNX" }
+>>   { 0 "MSE" "NMSE" } { 1 "MSE" "CMSE" }
+>> }
+>> 
+>> #####
+>> 4II = AZF
+>> 4CF = CYF
+>> MTN = CNX
+> 
+> set default PBradii mbondi3
+Using ArgH and AspGluO modified Bondi2 radii
+> temp = sequence { GLY }
+
+Error: sequence: Illegal UNIT at position #1.
+> leap temp = sequence { GLY }
+
+Error: Error from the parser: 
+       syntax error.
+       Check for typos, misspellings, etc.
+       Try help on the command name and desc on the command arguments.
+
+> temp
+
+Error: Error from the parser: 
+       syntax error.
+       Check for typos, misspellings, etc.
+       Try help on the command name and desc on the command arguments.
+
+> temp = sequence { GLY }
+
+Error: sequence: Illegal UNIT at position #1.
+> temp = sequence { GLY TYR ASP PRO GLU THR GLY THR TRP GLY }
+
+Error: sequence: Illegal UNIT at position #1.
+> help
+Help is available on the following subjects:
+
+_cmd_options_       _types_             add                 addAtomTypes
+addH                addIons             addIons2            addIonsRand
+addPath             addPdbAtomMap       addPdbResMap        alias
+alignAxes           bond                bondByDistance      center
+charge              check               clearPdbAtomMap     clearPdbResMap
+clearVariables      combine             copy                createAtom
+createParmset       createResidue       createUnit          crossLink
+debugOff            debugOn             debugStatus         deleteBond
+deleteOffLibEntry   deleteRestraint     desc                deSelect
+displayPdbAtomMap   displayPdbResMap    edit                flip
+groupSelectedAtoms  help                impose              list
+listOff             loadAmberParams     loadAmberPrep       loadMol2
+loadMol3            loadOff             loadPdb             loadPdbUsingSeq
+logFile             matchVariables      measureGeom         quit
+relax               remove              restrainAngle       restrainBond
+restrainTorsion     saveAmberParm       saveAmberParmNetcdf saveAmberParmPert
+saveAmberParmPol    saveAmberParmPolPertsaveAmberPrep       saveMol2
+saveMol3            saveOff             saveOffParm         savePdb
+scaleCharges        select              sequence            set
+set_default         setBox              showdefault         solvateBox
+solvateCap          solvateDontClip     solvateOct          solvateShell
+source              transform           translate           verbosity
+zMatrix             
+
+For a list of the current aliases, type "alias".
+> tleap
+
+Error: Error from the parser: 
+       syntax error.
+       Check for typos, misspellings, etc.
+       Try help on the command name and desc on the command arguments.
+
+> chig = sequence { GLY TYR ASP PRO GLU THR GLY THR TRP GLY }
+
+Error: sequence: Illegal UNIT at position #1.
+> quit
+	Quit
+
+Exiting LEaP: Errors = 7; Warnings = 3; Notes = 0.

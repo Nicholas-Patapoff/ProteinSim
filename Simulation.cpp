@@ -9,7 +9,7 @@
 #include <thread>
 #include <iomanip>
 
-simulation::simulation(Environment& temp1, parm& temp2, float step){
+simulation::simulation(Environment& temp1, parm& temp2, float step, std::string export_name){
 
     coord = std::make_unique<Environment>(temp1);
     top = std::make_unique<parm>(temp2);
@@ -21,33 +21,22 @@ simulation::simulation(Environment& temp1, parm& temp2, float step){
     
 
 
-    temp_file.open("newtemp.crd", std::ios::out);
+    temp_file.open(export_name +".crd", std::ios::out);
+    temp_file << std::endl;
     }
 
 
-void simulation::update_coord(float step_size, int frames){
-    int counting = 0;
-    for(int i = 0; i < frames; i++){
+void simulation::update_coord(float step_size, int frames, int export_step){
+    for(int i = 0; i <= frames; i++){
         VerletAlg(step_size);
         
-        if(i % 5000 == 0) {
-            std::cout << i << std::endl;
-            std::cout << "vel: " << velocities[6] << " " << velocities[7] << " " << velocities[8] << std::endl;
-            std::cout << "vel: " << velocities[18] << " " << velocities[19] << " " << velocities[20] << std::endl;
-            std::cout << "vel: " << velocities[21] << " " << velocities[22] << " " << velocities[23] << std::endl;
-            std::cout << "forces6: " << forces[6] << " " << forces[7] << " " << forces[8] << std::endl;
-            std::cout << "forces18: " << forces[18] << " " << forces[19] << " " << forces[20] << std::endl;
-            std::cout << "forces21: " << forces[21] << " " << forces[22] << " " << forces[23] << std::endl;
+        if(i % export_step == 0) {
+            std::cout<< (float) i / frames * 100 << "% complete!" << std::endl;
             float total_f = 0;
             for(int i = 0; i < forces.size(); i++){
                 total_f += forces[i];
             }
-            exports(counting);
-                    //std::this_thread::sleep_for(std::chrono::milliseconds(0));
-
-            //exports(counting);
-            counting += 1;
-
+            exports();
         }
     }
 }
@@ -130,7 +119,6 @@ void simulation::angle_force(int atom1, int atom2, int atom3, float k, float eq)
 
     float theta; 
     theta_from_dot(atom1, atom2, atom3, theta);
-    //std::cout << "theta: " <<  theta * 180 / 3.14 << " vs eq: " << eq * 180 / 3.14 << std::endl;
 
     float force_ba, force_bc;
     for(int i = 0; i < unit_inp_ba.size(); i++){
@@ -228,32 +216,28 @@ for(int atom = 0; atom < coord->Acoords.size(); atom++){
 forces.assign(forces.size(), 0);
 force_additions();
 for(int atom = 0; atom < velocities.size(); atom++){
-   velocities[atom] = velocities[atom] + forces[atom]*step_size / (2 * std::get<float>(Mass[atom/(int)3]) );//6.02214086e+26
+   velocities[atom] = velocities[atom] + forces[atom]*step_size / (2 * std::get<float>(Mass[atom/(int)3]) );
 }
 
 
 }
 
-void simulation::exports(int count){
+void simulation::exports(){
     if(!temp_file.is_open()){
-        std::cout << "failed" << std::endl;
+        std::cout << "failed open external file" << std::endl;
     }
     for(int i = 0; i < coord->Acoords.size(); i++){
         if(i % 10 == 0 && i != 0){
             temp_file << std::endl;
         }
         temp_file << std::fixed << std::right << std::setw(8) << std::setprecision(3) << (coord->Acoords[i]);
-        /*
         if(i == coord->Acoords.size() - 1){
-            for(int y = i + 1; y < i + 4; y++){
-                if(i % 10 == 0 ){
-                    temp_file << std::endl;
-                }
+            temp_file << std::endl;
+            for(int z = 1; z < 4; z++){
                 temp_file << std::fixed << std::right << std::setw(8) << std::setprecision(3) << (1.000);
             }
             
         }
-        */
         
     }
     temp_file << std::endl;

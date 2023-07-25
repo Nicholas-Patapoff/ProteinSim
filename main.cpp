@@ -12,10 +12,10 @@ int main()
 Environment PISUM_SATIVUM("chignolintemp.pdb");
 parm test("chigparmtemp.parm7"); 
 
-simulation small_probe(PISUM_SATIVUM, test, 1);
+simulation small_probe(PISUM_SATIVUM, test, 1, "temp");
 
 small_probe.force_additions();
-small_probe.update_coord(0.0001, 100001);
+small_probe.update_coord(0.0001, 10000, 2000);
 
 
 
