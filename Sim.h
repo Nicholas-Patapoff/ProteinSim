@@ -19,6 +19,7 @@ void unit_vector(float& mag, std::vector<float> d, std::vector<float>& unitv);
 void theta_from_dot(int& atom1, int& atom2, int& atom3, float& theta);
 void dot(std::vector<float>& disp1, std::vector<float>& disp2, float& val);
 void cross(std::vector<float>& vect1, std::vector<float>& vect2, std::vector<float>& cprod);
+void DHtheta_from_dot(std::vector<float>& nplane1, std::vector<float>& nplane2, float np1mag, float np2mag, float& theta);
 using T = std::variant<int, float, std::string>;
 
 public:
@@ -28,13 +29,13 @@ std::vector<float> forces;
 
 
 simulation(Environment& coord, parm& top, float step, std::string export_name);
-
 void update_coord(float step_size, int frames, int export_step);
 void exports();
 void spring_force(int atom1, int atom2, float kval, float eq);
 void force_additions();
 void VerletAlg(float& step); 
 void angle_force(int atom1, int atom2, int atom3, float k, float eq);
+void dihedral_force(int atom1, int atom2, int atom3, int atom4, float k, float period, float sceef, float scnbf);
 
 };
 

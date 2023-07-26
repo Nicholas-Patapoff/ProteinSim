@@ -76,6 +76,7 @@ void simulation::force_additions(){ //all forces on protien for bond/FF interact
 
     std::unordered_map<std::string, std::vector<T> >::iterator aev = top->values.find("ANGLE_EQUIL_VALUE");
         std::vector<T>& AEQV = aev->second;
+
     for(int i = 0; i < AWoutH.size(); i+=4){
         angle_force( std::get<int>(AWoutH[i]) / 3,std::get<int>(AWoutH[i + 1]) / 3, std::get<int>(AWoutH[i + 2]) / 3, std::get<float>(AForceC[std::get<int>(AWoutH[i + 3]) - 1]), std::get<float>(AEQV[std::get<int>(AWoutH[i + 3]) - 1]));
 
@@ -86,8 +87,59 @@ void simulation::force_additions(){ //all forces on protien for bond/FF interact
 
     }
 
+    //Dihedral forces
+    std::unordered_map<std::string, std::vector<T> >::iterator dih = top->values.find("DIHEDRALS_INC_HYDROGEN");
+        std::vector<T>& DincH = dih->second;
+
+    std::unordered_map<std::string, std::vector<T> >::iterator dwh = top->values.find("DIHEDRALS_WITHOUT_HYDROGEN");
+        std::vector<T>& DWoutH = dwh->second;
+
+    std::unordered_map<std::string, std::vector<T> >::iterator dfc = top->values.find("DIHEDRAL_FORCE_CONSTANT");
+        std::vector<T>& DForceC = dfc->second;
+
+    std::unordered_map<std::string, std::vector<T> >::iterator dp = top->values.find("DIHEDRAL_PERIODICITY");
+        std::vector<T>& DPeriod = dp->second;
+
+    std::unordered_map<std::string, std::vector<T> >::iterator dph = top->values.find("DIHEDRAL_PHASE");
+        std::vector<T>& DPhase = dph->second;
+
+    std::unordered_map<std::string, std::vector<T> >::iterator scee = top->values.find("SCEE_SCALE_FACTOR");
+        std::vector<T>& SCEE_SF = scee->second;      
+
+    std::unordered_map<std::string, std::vector<T> >::iterator scnb = top->values.find("SCNB_SCALE_FACTOR");
+        std::vector<T>& SCNB_SF = scnb->second;  
+    
+    for(int i = 0; i < DWoutH.size(); i+=5){
+        dihedral_force( std::get<int>(DWoutH[i]) / 3,std::get<int>(DWoutH[i + 1]) / 3, std::get<int>(DWoutH[i + 2]) / 3, std::get<int>(DWoutH[i + 3]) / 3, std::get<float>(DForceC[std::get<int>(DWoutH[i + 4]) - 1]), 
+        std::get<float>(DPeriod[std::get<int>(DWoutH[i + 4]) - 1]), std::get<float>(SCEE_SF[std::get<int>(DWoutH[i + 4]) - 1]), std::get<float>(SCNB_SF[std::get<int>(DWoutH[i + 4]) - 1]));
+
+    }
+    for(int i = 0; i < DincH.size(); i+=5){
+        dihedral_force( std::get<int>(DincH[i]) / 3,std::get<int>(DincH[i + 1]) / 3, std::get<int>(DincH[i + 2]) / 3, std::get<int>(DincH[i + 3]) / 3, std::get<float>(DForceC[std::get<int>(DincH[i + 4]) - 1]), 
+        std::get<float>(DPeriod[std::get<int>(DincH[i + 4]) - 1]), std::get<float>(SCEE_SF[std::get<int>(DincH[i + 4]) - 1]), std::get<float>(SCNB_SF[std::get<int>(DincH[i + 4]) - 1]));
+
+    }
     
 }
+
+void simulation::spring_force(int atom1, int atom2, float k, float eq){
+    std::vector<float> disp;
+    float dmag;
+    std::vector<float> dunit_vect;
+
+    displacement_vect(disp, atom1, atom2);
+    magnitude(disp, dmag);
+    unit_vector(dmag, disp, dunit_vect);
+
+    for(int i = 0; i < disp.size(); i ++){
+        float force = -0.5 * (-k * (disp[i] - eq * dunit_vect[i]));
+        forces[atom2 * 3 + i] += force;
+        forces[atom1 * 3 + i] -= force;
+
+    }
+
+}
+
 
 void simulation::angle_force(int atom1, int atom2, int atom3, float k, float eq){ //this needs to be optimized so as not to make disp and mags two times
     //first find the change of potential with respect the change of angle : 2k(thetaEQ - current_theta)
@@ -132,6 +184,46 @@ void simulation::angle_force(int atom1, int atom2, int atom3, float k, float eq)
 
 }
 
+void simulation::dihedral_force(int atom1, int atom2, int atom3, int atom4, float k, float period, float sceef, float scnbf){
+//torsion potential is defined as U= 0.5[A1(1 + cos(theta)) + A2(1 - cos2theta)) + A3(1 + cost(3theta)) + A4]
+//the partial derivative of tors w/ respect to pos of atom a (pa) is: dU/dpa = du/dtheta * dtheta/dpa
+//dU/dpa = +/- 0.5(-A1sin(theta) + 2A2sing(2theta) - 3A3sin(3theta))
+//dtheta/dpa = 1/(mag(end_vector) * sin(theta))
+//steps to find forces on end atoms: 1.create unit vectors whose plane is orthogonal abc and bcd 2.
+
+//1.
+std::vector<float> dispba, dispbc, dispcb, dispcd;
+displacement_vect(dispba, atom2, atom1);
+displacement_vect(dispbc, atom2, atom3);
+displacement_vect(dispcb, atom3, atom2);
+displacement_vect(dispcd, atom3, atom4);
+
+std::vector<float> orthabc, orthbcd;
+cross(dispba, dispbc, orthabc);
+cross(dispcd, dispcb, orthbcd);
+
+float orthabcmag, orthbcdmag, normabcmag, normbcdmag;
+magnitude(orthabc, orthabcmag);
+magnitude(orthbcd, orthbcdmag);
+
+std::vector<float> normabc, normbcd;
+unit_vector(orthabcmag, orthabc, normabc);
+unit_vector(orthbcdmag, orthbcd, normbcd);
+magnitude(normabc,normabcmag);
+magnitude(normbcd,normbcdmag);
+
+
+float theta;
+DHtheta_from_dot(normabc, normbcd, normabcmag, normbcdmag, theta);
+std::cout << atom1 << " " << atom2 << " " << atom3 << " " << atom4 << std::endl;
+std::cout << theta << std::endl;
+}
+
+void simulation::DHtheta_from_dot(std::vector<float>& nplane1, std::vector<float>& nplane2, float np1mag, float np2mag, float& theta){
+    float dot12 = 0;
+    dot(nplane1, nplane2, dot12);
+    theta = acos(dot12/(np1mag * np2mag));
+}
 
 void simulation::theta_from_dot(int& atom1, int& atom2, int& atom3, float& theta){
     std::vector<float> disp1, disp2;
@@ -164,25 +256,10 @@ void simulation::dot(std::vector<float>& disp1, std::vector<float>& disp2, float
     }
 }
 
-void simulation::spring_force(int atom1, int atom2, float k, float eq){
-    std::vector<float> disp;
-    float dmag;
-    std::vector<float> dunit_vect;
 
-    displacement_vect(disp, atom1, atom2);
-    magnitude(disp, dmag);
-    unit_vector(dmag, disp, dunit_vect);
-
-    for(int i = 0; i < disp.size(); i ++){
-        float force = -0.5 * (-k * (disp[i] - eq * dunit_vect[i]));
-        forces[atom2 * 3 + i] += force;
-        forces[atom1 * 3 + i] -= force;
-
-    }
-
-}
 
 void simulation::unit_vector(float& mag, std::vector<float> d, std::vector<float>& unitv){
+    
     for(int i = 0; i < d.size(); i++){
         unitv.push_back(d[i]/mag);
     }
