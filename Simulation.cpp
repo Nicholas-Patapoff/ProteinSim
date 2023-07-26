@@ -111,12 +111,12 @@ void simulation::force_additions(){ //all forces on protien for bond/FF interact
     
     for(int i = 0; i < DWoutH.size(); i+=5){
         dihedral_force( std::get<int>(DWoutH[i]) / 3,std::get<int>(DWoutH[i + 1]) / 3, std::get<int>(DWoutH[i + 2]) / 3, std::get<int>(DWoutH[i + 3]) / 3, std::get<float>(DForceC[std::get<int>(DWoutH[i + 4]) - 1]), 
-        std::get<float>(DPeriod[std::get<int>(DWoutH[i + 4]) - 1]), std::get<float>(SCEE_SF[std::get<int>(DWoutH[i + 4]) - 1]), std::get<float>(SCNB_SF[std::get<int>(DWoutH[i + 4]) - 1]));
+        std::get<float>(DPeriod[std::get<int>(DWoutH[i + 4]) - 1]), std::get<float>(SCEE_SF[std::get<int>(DWoutH[i + 4]) - 1]), std::get<float>(SCNB_SF[std::get<int>(DWoutH[i + 4]) - 1]), std::get<float>(DPhase[std::get<int>(DWoutH[i + 4]) - 1]));
 
     }
     for(int i = 0; i < DincH.size(); i+=5){
         dihedral_force( std::get<int>(DincH[i]) / 3,std::get<int>(DincH[i + 1]) / 3, std::get<int>(DincH[i + 2]) / 3, std::get<int>(DincH[i + 3]) / 3, std::get<float>(DForceC[std::get<int>(DincH[i + 4]) - 1]), 
-        std::get<float>(DPeriod[std::get<int>(DincH[i + 4]) - 1]), std::get<float>(SCEE_SF[std::get<int>(DincH[i + 4]) - 1]), std::get<float>(SCNB_SF[std::get<int>(DincH[i + 4]) - 1]));
+        std::get<float>(DPeriod[std::get<int>(DincH[i + 4]) - 1]), std::get<float>(SCEE_SF[std::get<int>(DincH[i + 4]) - 1]), std::get<float>(SCNB_SF[std::get<int>(DincH[i + 4]) - 1]), std::get<float>(DPhase[std::get<int>(DincH[i + 4]) - 1]));
 
     }
     
@@ -184,12 +184,13 @@ void simulation::angle_force(int atom1, int atom2, int atom3, float k, float eq)
 
 }
 
-void simulation::dihedral_force(int atom1, int atom2, int atom3, int atom4, float k, float period, float sceef, float scnbf){
+void simulation::dihedral_force(int atom1, int atom2, int atom3, int atom4, float k, float period, float sceef, float scnbf, float phase){
 //torsion potential is defined as U= 0.5[A1(1 + cos(theta)) + A2(1 - cos2theta)) + A3(1 + cost(3theta)) + A4]
 //the partial derivative of tors w/ respect to pos of atom a (pa) is: dU/dpa = du/dtheta * dtheta/dpa
 //dU/dpa = +/- 0.5(-A1sin(theta) + 2A2sing(2theta) - 3A3sin(3theta))
 //dtheta/dpa = 1/(mag(end_vector) * sin(theta))
-//steps to find forces on end atoms: 1.create unit vectors whose plane is orthogonal abc and bcd 2.
+//steps to find forces on end atoms: 1.create unit vectors whose direction is orthogonal abc and bcd 2. find the angle between the planes 
+//3. calculate the forces for atoms a and d usign (0.5/mag(ab)sin(theta)) * (1A1sin(theta) - 2A2sin(2theta) + 3A3(sin(theta)) * norm vector orth to plane. 
 
 //1.
 std::vector<float> dispba, dispbc, dispcb, dispcd;
@@ -202,9 +203,11 @@ std::vector<float> orthabc, orthbcd;
 cross(dispba, dispbc, orthabc);
 cross(dispcd, dispcb, orthbcd);
 
-float orthabcmag, orthbcdmag, normabcmag, normbcdmag;
+float orthabcmag, orthbcdmag, normabcmag, normbcdmag, magab, magcd;
 magnitude(orthabc, orthabcmag);
 magnitude(orthbcd, orthbcdmag);
+magnitude(dispba, magab);
+magnitude(dispcd, magcd);
 
 std::vector<float> normabc, normbcd;
 unit_vector(orthabcmag, orthabc, normabc);
@@ -212,12 +215,34 @@ unit_vector(orthbcdmag, orthbcd, normbcd);
 magnitude(normabc,normabcmag);
 magnitude(normbcd,normbcdmag);
 
-
+//2
 float theta;
 DHtheta_from_dot(normabc, normbcd, normabcmag, normbcdmag, theta);
 std::cout << atom1 << " " << atom2 << " " << atom3 << " " << atom4 << std::endl;
 std::cout << theta << std::endl;
+
+//3
+std::vector<float> fba_direction, fcd_direction, nfba_direction, nfcd_direction;
+cross(dispba, normabc, fba_direction);
+cross(dispcd, normbcd, fcd_direction);
+float forcea, forced, mag_badirection, mag_cddirection;
+magnitude(fba_direction, mag_badirection);
+magnitude(fcd_direction, mag_cddirection);
+unit_vector(mag_badirection, fba_direction, nfba_direction);
+unit_vector(mag_cddirection, fcd_direction, nfcd_direction);
+
+forcea = (-k * period * sin(period * theta + phase))/ magab;
+forced = (-k * period * sin(period * theta + phase))/ magcd;
+for(int i = 0; i < 3; i++){
+    
+        forces[atom1 * 3 + i] += forcea * nfba_direction[i];
+        forces[atom4 * 3 + i] -= forced * nfcd_direction[i];
+    }    
+
 }
+
+
+
 
 void simulation::DHtheta_from_dot(std::vector<float>& nplane1, std::vector<float>& nplane2, float np1mag, float np2mag, float& theta){
     float dot12 = 0;

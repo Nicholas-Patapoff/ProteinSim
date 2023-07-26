@@ -35,7 +35,7 @@ void spring_force(int atom1, int atom2, float kval, float eq);
 void force_additions();
 void VerletAlg(float& step); 
 void angle_force(int atom1, int atom2, int atom3, float k, float eq);
-void dihedral_force(int atom1, int atom2, int atom3, int atom4, float k, float period, float sceef, float scnbf);
+void dihedral_force(int atom1, int atom2, int atom3, int atom4, float k, float period, float sceef, float scnbf, float phase);
 
 };
 
