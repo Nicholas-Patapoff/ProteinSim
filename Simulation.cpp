@@ -216,6 +216,7 @@ unit_vector(orthabcmag, orthabc, normabc);
 unit_vector(orthbcdmag, orthbcd, normbcd);
 magnitude(normabc,normabcmag);
 magnitude(normbcd,normbcdmag);
+
 //2
 float theta;
 DHtheta_from_dot(normabc, normbcd, normabcmag, normbcdmag, theta);
@@ -224,19 +225,20 @@ DHtheta_from_dot(normabc, normbcd, normabcmag, normbcdmag, theta);
 std::vector<float> fba_direction, fcd_direction, nfba_direction, nfcd_direction;
 cross(dispba, normabc, fba_direction);
 cross(dispcd, normbcd, fcd_direction);
+
 float forcea, forced, mag_badirection, mag_cddirection;
 magnitude(fba_direction, mag_badirection);
 magnitude(fcd_direction, mag_cddirection);
 unit_vector(mag_badirection, fba_direction, nfba_direction);
 unit_vector(mag_cddirection, fcd_direction, nfcd_direction);
 
-forcea = (-k * period * sin(period * theta + phase))/ magab;
+forcea = (-k * period * sin(period * theta + phase))/ magab;//update for new mag as shown in paper. will be distance to origin. 
 forced = (-k * period * sin(period * theta + phase))/ magcd;
 
 
 for(int i = 0; i < 3; i++){
         forces[atom1 * 3 + i] +=  forcea * normabc[i];
-        forces[atom4 * 3 + i] -=  forced * normbcd[i];
+        forces[atom4 * 3 + i] +=  forced * normbcd[i];
         std::cout << atom1 << " " <<forces[atom1 * 3 + i] << " ";
         std::cout << forces[atom4 * 3 + i] << " ";
     }    
