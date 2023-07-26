@@ -56,7 +56,7 @@ GLY
   1.92160833E+00
 %FLAG DIHEDRAL_FORCE_CONSTANT                                                   
 %FORMAT(5E16.8)                                                                 
-  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  1.00000000E+00  1.00000000E+00  1.00000000E+00
 %FLAG DIHEDRAL_PERIODICITY                                                      
 %FORMAT(5E16.8)                                                                 
   1.00000000E+00  2.00000000E+00  3.00000000E+00

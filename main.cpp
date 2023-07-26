@@ -9,13 +9,13 @@
 int main()
 {
 
-Environment PISUM_SATIVUM("GLY2.pdb");
-parm test("GLY.parm7"); 
+Environment PISUM_SATIVUM("chignolin_ext.pdb");
+parm test("chig_ext.parm7"); 
 
-simulation small_probe(PISUM_SATIVUM, test, 1, "temp");
+simulation small_probe(PISUM_SATIVUM, test, 1, "chig");
 
 small_probe.force_additions();
-small_probe.update_coord(0.0001, 20000, 2000);
+small_probe.update_coord(0.0001, 20000, 100);
 
 
 

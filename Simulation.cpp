@@ -21,7 +21,7 @@ simulation::simulation(Environment& temp1, parm& temp2, float step, std::string 
     
 
 
-    temp_file.open(export_name +".crd", std::ios::out);
+    temp_file.open("/home/nich/Documents/GitHub/coord_vis/" + export_name +".crd", std::ios::out);
     temp_file << std::endl;
     }
 
@@ -108,7 +108,7 @@ void simulation::force_additions(){ //all forces on protien for bond/FF interact
 
     std::unordered_map<std::string, std::vector<T> >::iterator scnb = top->values.find("SCNB_SCALE_FACTOR");
         std::vector<T>& SCNB_SF = scnb->second;  
-    
+
     for(int i = 0; i < DWoutH.size(); i+=5){
         dihedral_force( std::get<int>(DWoutH[i]) / 3,std::get<int>(DWoutH[i + 1]) / 3, std::get<int>(DWoutH[i + 2]) / 3, std::get<int>(DWoutH[i + 3]) / 3, std::get<float>(DForceC[std::get<int>(DWoutH[i + 4]) - 1]), 
         std::get<float>(DPeriod[std::get<int>(DWoutH[i + 4]) - 1]), std::get<float>(SCEE_SF[std::get<int>(DWoutH[i + 4]) - 1]), std::get<float>(SCNB_SF[std::get<int>(DWoutH[i + 4]) - 1]), std::get<float>(DPhase[std::get<int>(DWoutH[i + 4]) - 1]));
@@ -119,6 +119,8 @@ void simulation::force_additions(){ //all forces on protien for bond/FF interact
         std::get<float>(DPeriod[std::get<int>(DincH[i + 4]) - 1]), std::get<float>(SCEE_SF[std::get<int>(DincH[i + 4]) - 1]), std::get<float>(SCNB_SF[std::get<int>(DincH[i + 4]) - 1]), std::get<float>(DPhase[std::get<int>(DincH[i + 4]) - 1]));
 
     }
+    
+    
     
 }
 
@@ -214,12 +216,9 @@ unit_vector(orthabcmag, orthabc, normabc);
 unit_vector(orthbcdmag, orthbcd, normbcd);
 magnitude(normabc,normabcmag);
 magnitude(normbcd,normbcdmag);
-
 //2
 float theta;
 DHtheta_from_dot(normabc, normbcd, normabcmag, normbcdmag, theta);
-std::cout << atom1 << " " << atom2 << " " << atom3 << " " << atom4 << std::endl;
-std::cout << theta << std::endl;
 
 //3
 std::vector<float> fba_direction, fcd_direction, nfba_direction, nfcd_direction;
@@ -233,12 +232,15 @@ unit_vector(mag_cddirection, fcd_direction, nfcd_direction);
 
 forcea = (-k * period * sin(period * theta + phase))/ magab;
 forced = (-k * period * sin(period * theta + phase))/ magcd;
-for(int i = 0; i < 3; i++){
-    
-        forces[atom1 * 3 + i] += forcea * nfba_direction[i];
-        forces[atom4 * 3 + i] -= forced * nfcd_direction[i];
-    }    
 
+
+for(int i = 0; i < 3; i++){
+        forces[atom1 * 3 + i] +=  forcea * normabc[i];
+        forces[atom4 * 3 + i] -=  forced * normbcd[i];
+        std::cout << atom1 << " " <<forces[atom1 * 3 + i] << " ";
+        std::cout << forces[atom4 * 3 + i] << " ";
+    }    
+    std::cout << std::endl;
 }
 
 
@@ -247,7 +249,10 @@ for(int i = 0; i < 3; i++){
 void simulation::DHtheta_from_dot(std::vector<float>& nplane1, std::vector<float>& nplane2, float np1mag, float np2mag, float& theta){
     float dot12 = 0;
     dot(nplane1, nplane2, dot12);
-    theta = acos(dot12/(np1mag * np2mag));
+    float cosine_value = dot12 / (np1mag * np2mag);
+    cosine_value = std::max(-1.0f, std::min(1.0f, cosine_value));
+    theta = acos(cosine_value);
+    std::cout << " theta then dot: " << dot12 << " " << np1mag << " " << np2mag << " " << theta << std::endl;
 }
 
 void simulation::theta_from_dot(int& atom1, int& atom2, int& atom3, float& theta){
@@ -319,8 +324,9 @@ forces.assign(forces.size(), 0);
 force_additions();
 for(int atom = 0; atom < velocities.size(); atom++){
    velocities[atom] = velocities[atom] + forces[atom]*step_size / (2 * std::get<float>(Mass[atom/(int)3]) );
+   
 }
-
+//std::cout << coord->Acoords[0] << " " << coord->Acoords[1] << " " << coord->Acoords[2] << std::endl;
 
 }
 
