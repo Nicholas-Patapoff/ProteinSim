@@ -20,6 +20,7 @@ void theta_from_dot(int& atom1, int& atom2, int& atom3, float& theta);
 void dot(std::vector<float>& disp1, std::vector<float>& disp2, float& val);
 void cross(std::vector<float>& vect1, std::vector<float>& vect2, std::vector<float>& cprod);
 void DHtheta_from_dot(std::vector<float>& nplane1, std::vector<float>& nplane2, float np1mag, float np2mag, float& theta);
+void DHrotTheta_from_dot(std::vector<float>& disp1, std::vector<float>& disp2, float& mag_disp1, float& mag_disp2, float& theta);
 using T = std::variant<int, float, std::string>;
 
 public:
