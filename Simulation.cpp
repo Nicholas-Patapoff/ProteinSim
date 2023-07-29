@@ -195,10 +195,10 @@ void simulation::dihedral_force(int atom1, int atom2, int atom3, int atom4, floa
 //3. calculate the forces for atoms a and d usign (0.5/mag(ab)sin(theta)) * (1A1sin(theta) - 2A2sin(2theta) + 3A3(sin(theta)) * norm vector orth to plane. 
 
 //1.
-std::vector<float> dispab, dispbc, dispcb, dispcd;
-displacement_vect(dispab, atom1, atom2);
-displacement_vect(dispbc, atom3, atom2);
-displacement_vect(dispcb, atom2, atom3);
+std::vector<float> dispab, dispbc, dispcb, dispcd, dispdc;
+displacement_vect(dispab, atom2, atom1);
+displacement_vect(dispbc, atom2, atom3);
+displacement_vect(dispcb, atom3, atom2);
 displacement_vect(dispcd, atom4, atom3);
 
 std::vector<float> orthabc, orthbcd;
@@ -222,8 +222,8 @@ magnitude(normbcd,normbcdmag);
 float dhtheta, abtheta, cdtheta;
 DHtheta_from_dot(normabc, normbcd, normabcmag, normbcdmag, dhtheta);
 DHrotTheta_from_dot(dispab, dispcb, magab, magcb,abtheta);
-DHrotTheta_from_dot(dispcd, dispbc, magcd, magcb,cdtheta);
-std::cout << abtheta << " " << cdtheta << std::endl;
+DHrotTheta_from_dot(dispcd, dispcb, magcd, magcb,cdtheta);
+
 //3
 std::vector<float> fba_direction, fcd_direction, nfba_direction, nfcd_direction;
 cross(dispab, normabc, fba_direction);
@@ -235,20 +235,24 @@ magnitude(fcd_direction, mag_cddirection);
 unit_vector(mag_badirection, fba_direction, nfba_direction);
 unit_vector(mag_cddirection, fcd_direction, nfcd_direction);
 
+std::cout << atom1 << " " << atom4 << " theta:" << dhtheta * 180/M_PI << " thetaab:" << abtheta * 180/M_PI << " thetacd:" << cdtheta * 180/M_PI << std::endl;;
 
-/*
-forcea = (-k * period * sin(period * dhtheta + phase))/ (sin(abtheta) * magab);//update for new mag as shown in paper. will be distance to origin. 
-forced = (-k * period * sin(period * dhtheta + phase))/ (magcd);
+forcea = (-k * period * sin(period * dhtheta + phase))/ (sin(abtheta) * magab);//update for new mag as shown in paper. will be distance to origin plane. 
+forced = (-k * period * sin(period * dhtheta + phase))/ (sin(cdtheta) * magcd);
 
+std::vector<float> DF_additions;
+DF_additions.push_back(0);
+for(int i = 0; i < 3 ; i++){
+DF_additions[0] += forcea * normabc[i] + forced * normbcd[i];
+}
+std::cout << DF_additions[0] << " forces" << std::endl;
 
 for(int i = 0; i < 3; i++){
         forces[atom1 * 3 + i] +=  forcea * normabc[i];
         forces[atom4 * 3 + i] +=  forced * normbcd[i];
-        std::cout << atom1 << " " <<forces[atom1 * 3 + i] << " ";
-        std::cout << forces[atom4 * 3 + i] << " ";
     }    
-    std::cout << std::endl;
-*/
+    std::cout << std::endl; 
+
 }
 
 
@@ -261,16 +265,25 @@ void simulation::DHtheta_from_dot(std::vector<float>& nplane1, std::vector<float
     dot(nplane1, nplane2, dot12);
     float cosine_value = dot12 / (np1mag * np2mag);
     cosine_value = std::max(-1.0f, std::min(1.0f, cosine_value));
-    theta = acos(cosine_value) * 180/M_PI;
+    theta = acos(cosine_value);
     //std::cout << " theta then dot: " << dot12 << " " << np1mag << " " << np2mag << " " << theta << std::endl;
 }
 
 void simulation::DHrotTheta_from_dot(std::vector<float>& disp1, std::vector<float>& disp2, float& mag_disp1, float& mag_disp2, float& theta){
     float dotted = 0;
+    std::cout << "mag 1 " << mag_disp1 << " mag 2 " << mag_disp2 << " ";
+    for(int i = 0; i < 3; i++){
+        std::cout << disp1[i] << " and " << disp2[i] << " next ";
+    }
+    std::cout << std::endl;
     dot(disp1, disp2, dotted);
     float cosine_value = dotted / (mag_disp1 * mag_disp2);
     cosine_value = std::max(-1.0f, std::min(1.0f, cosine_value));
-    theta = acos(cosine_value) * 180/M_PI;
+    theta = acos(cosine_value);
+    if(theta * 180 /M_PI > 90){
+        theta -= M_PI/2; 
+        std::cout << "new theta " << theta * 180/M_PI << std::endl;
+    }
 }
 
 void simulation::theta_from_dot(int& atom1, int& atom2, int& atom3, float& theta){
@@ -287,7 +300,7 @@ void simulation::theta_from_dot(int& atom1, int& atom2, int& atom3, float& theta
 
     float cosine_value = dotac/(magba*magbc);
     cosine_value = std::max(-1.0f, std::min(1.0f, cosine_value));
-    theta = acos(cosine_value) * 180/M_PI;
+    theta = acos(cosine_value);
 }
 
 
@@ -345,7 +358,6 @@ for(int atom = 0; atom < velocities.size(); atom++){
    velocities[atom] = velocities[atom] + forces[atom]*step_size / (2 * std::get<float>(Mass[atom/(int)3]) );
    
 }
-//std::cout << coord->Acoords[0] << " " << coord->Acoords[1] << " " << coord->Acoords[2] << std::endl;
 
 }
 
