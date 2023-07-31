@@ -196,9 +196,9 @@ void simulation::dihedral_force(int atom1, int atom2, int atom3, int atom4, floa
 
 //1.
 std::vector<float> dispab, dispbc, dispcb, dispcd, dispdc;
-displacement_vect(dispab, atom2, atom1);
-displacement_vect(dispbc, atom2, atom3);
-displacement_vect(dispcb, atom3, atom2);
+displacement_vect(dispab, atom1, atom2);
+displacement_vect(dispbc, atom3, atom2);
+displacement_vect(dispcb, atom2, atom3);
 displacement_vect(dispcd, atom4, atom3);
 
 std::vector<float> orthabc, orthbcd;
@@ -234,8 +234,10 @@ float forcea, forced;
 
 std::cout << atom1 << " " << atom4 << " theta:" << dhtheta * 180/M_PI << " thetaab:" << abtheta * 180/M_PI << " thetacd:" << cdtheta * 180/M_PI << std::endl;;
 
-forcea = 0.5 * (-k * period * sin(period * dhtheta + phase))/ (sin(abtheta) * magab);//update for new mag as shown in paper. will be distance to origin plane. 
-forced = 0.5 * (-k * period * sin(period * dhtheta + phase))/ (sin(cdtheta) * magcd);
+
+    forcea = 0.5 * (-k * period * sin(period * dhtheta + phase))/ (sin(abtheta) * magab);//update for new mag as shown in paper. will be distance to origin plane. 
+    forced = 0.5 * (-k * period * sin(period * dhtheta + phase))/ (sin(cdtheta) * magcd);
+
 
 std::vector<float> DF_additions, Fa, Fd;
 
@@ -245,11 +247,10 @@ for(int i = 0; i < 3; i++){
 }
 
 for(int i = 0; i < 3; i++){
-        forces[atom1 * 3 + i] +=  Fa[i];
-        forces[atom4 * 3 + i] +=  Fd[i];
+        //forces[atom1 * 3 + i] +=  Fa[i];
+        //forces[atom4 * 3 + i] +=  Fd[i];
     }    
-
-
+/*
 std::vector<float> dispoc;
 displacement_vect(dispoc, atom2, atom3);
 
@@ -279,10 +280,16 @@ resize(tb, -1);
 DF_additions.push_back(0);
 std::cout << " forces add" << std::endl;
 for(int i = 0; i < 3; i++){
-        forces[abs(atom2) * 3 + i] +=  tb[i];
-        forces[abs(atom3) * 3 + i] +=  tc[i];
+        forces[abs(atom2) * 3 + i] -=  tb[i];
+        forces[abs(atom3) * 3 + i] -=  tc[i];
         std::cout << tb[i] << std::endl;
     }
+*/
+
+
+
+
+
 
 //std::cout << DF_additions[0] << " forces" << std::endl;
 //4: forces on B and C

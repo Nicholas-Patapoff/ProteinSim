@@ -12,10 +12,10 @@ int main()
 Environment PISUM_SATIVUM("GLY2.pdb");
 parm test("GLY.parm7"); 
 
-simulation small_probe(PISUM_SATIVUM, test, 1, "GLYDIH3");
+simulation small_probe(PISUM_SATIVUM, test, 1, "GLY");
 
 small_probe.force_additions();
-small_probe.update_coord(0.01, 2000, 2);
+small_probe.update_coord(0.01, 50000, 4);
 
 
 
