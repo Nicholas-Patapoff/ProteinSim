@@ -110,12 +110,12 @@ void simulation::force_additions(){ //all forces on protien for bond/FF interact
         std::vector<T>& SCNB_SF = scnb->second;  
 
     for(int i = 0; i < DWoutH.size(); i+=5){
-        dihedral_force( std::get<int>(DWoutH[i]) / 3,std::get<int>(DWoutH[i + 1]) / 3, std::get<int>(DWoutH[i + 2]) / 3, std::get<int>(DWoutH[i + 3]) / 3, std::get<float>(DForceC[std::get<int>(DWoutH[i + 4]) - 1]), 
+        dihedral_force( std::get<int>(DWoutH[i]) / 3,std::get<int>(DWoutH[i + 1]) / 3, abs(std::get<int>(DWoutH[i + 2]) / 3), std::get<int>(DWoutH[i + 3]) / 3, std::get<float>(DForceC[std::get<int>(DWoutH[i + 4]) - 1]), 
         std::get<float>(DPeriod[std::get<int>(DWoutH[i + 4]) - 1]), std::get<float>(SCEE_SF[std::get<int>(DWoutH[i + 4]) - 1]), std::get<float>(SCNB_SF[std::get<int>(DWoutH[i + 4]) - 1]), std::get<float>(DPhase[std::get<int>(DWoutH[i + 4]) - 1]));
 
     }
     for(int i = 0; i < DincH.size(); i+=5){
-        dihedral_force( std::get<int>(DincH[i]) / 3,std::get<int>(DincH[i + 1]) / 3, std::get<int>(DincH[i + 2]) / 3, std::get<int>(DincH[i + 3]) / 3, std::get<float>(DForceC[std::get<int>(DincH[i + 4]) - 1]), 
+        dihedral_force( std::get<int>(DincH[i]) / 3,std::get<int>(DincH[i + 1]) / 3, abs(std::get<int>(DincH[i + 2]) / 3), std::get<int>(DincH[i + 3]) / 3, std::get<float>(DForceC[std::get<int>(DincH[i + 4]) - 1]), 
         std::get<float>(DPeriod[std::get<int>(DincH[i + 4]) - 1]), std::get<float>(SCEE_SF[std::get<int>(DincH[i + 4]) - 1]), std::get<float>(SCNB_SF[std::get<int>(DincH[i + 4]) - 1]), std::get<float>(DPhase[std::get<int>(DincH[i + 4]) - 1]));
 
     }
@@ -229,35 +229,84 @@ std::vector<float> fba_direction, fcd_direction, nfba_direction, nfcd_direction;
 cross(dispab, normabc, fba_direction);
 cross(dispcd, normbcd, fcd_direction);
 
-float forcea, forced, mag_badirection, mag_cddirection;
-magnitude(fba_direction, mag_badirection);
-magnitude(fcd_direction, mag_cddirection);
-unit_vector(mag_badirection, fba_direction, nfba_direction);
-unit_vector(mag_cddirection, fcd_direction, nfcd_direction);
+float forcea, forced;
+
 
 std::cout << atom1 << " " << atom4 << " theta:" << dhtheta * 180/M_PI << " thetaab:" << abtheta * 180/M_PI << " thetacd:" << cdtheta * 180/M_PI << std::endl;;
 
-forcea = (-k * period * sin(period * dhtheta + phase))/ (sin(abtheta) * magab);//update for new mag as shown in paper. will be distance to origin plane. 
-forced = (-k * period * sin(period * dhtheta + phase))/ (sin(cdtheta) * magcd);
+forcea = 0.5 * (-k * period * sin(period * dhtheta + phase))/ (sin(abtheta) * magab);//update for new mag as shown in paper. will be distance to origin plane. 
+forced = 0.5 * (-k * period * sin(period * dhtheta + phase))/ (sin(cdtheta) * magcd);
 
-std::vector<float> DF_additions;
-DF_additions.push_back(0);
-for(int i = 0; i < 3 ; i++){
-DF_additions[0] += forcea * normabc[i] + forced * normbcd[i];
-}
-std::cout << DF_additions[0] << " forces" << std::endl;
+std::vector<float> DF_additions, Fa, Fd;
 
 for(int i = 0; i < 3; i++){
-        forces[atom1 * 3 + i] +=  forcea * normabc[i];
-        forces[atom4 * 3 + i] +=  forced * normbcd[i];
+    Fa.push_back(forcea * normabc[i]);
+    Fd.push_back(forced * normbcd[i]);
+}
+
+for(int i = 0; i < 3; i++){
+        forces[atom1 * 3 + i] +=  Fa[i];
+        forces[atom4 * 3 + i] +=  Fd[i];
     }    
-    std::cout << std::endl; 
+
+
+std::vector<float> dispoc;
+displacement_vect(dispoc, atom2, atom3);
+
+resize(dispoc, 0.5);
+resize(dispcd, 0.5);
+resize(dispab, 0.5);
+
+
+std::vector<float> ocXforced, cdXforced, baXforcea, tc, tb;
+cross(dispoc, Fd, ocXforced);
+cross(dispcd, Fd, cdXforced);
+cross(dispab, Fa, baXforcea);
+
+for(int i = 0; i < 3; i++){
+    tc.push_back(0);
+    tb.push_back(0);
+}
+std::cout << "one " << std::endl;
+vect_add(ocXforced, cdXforced, tc);
+vect_add(tc, baXforcea, tc);
+resize(tc, -1);
+
+vect_add(Fa, Fd, tb);
+vect_add(tb, tc, tb);
+resize(tb, -1);
+
+DF_additions.push_back(0);
+std::cout << " forces add" << std::endl;
+for(int i = 0; i < 3; i++){
+        forces[abs(atom2) * 3 + i] +=  tb[i];
+        forces[abs(atom3) * 3 + i] +=  tc[i];
+        std::cout << tb[i] << std::endl;
+    }
+
+//std::cout << DF_additions[0] << " forces" << std::endl;
+//4: forces on B and C
+
+
+
 
 }
 
 
+void simulation::vect_add(std::vector<float>& v1, std::vector<float>& v2, std::vector<float>& product){
+
+    for(int i = 0; i < v1.size(); i++){
+        product[i] = v1[i] + v2[i]; 
+    }
+
+}
 
 
+void simulation::resize(std::vector<float>& vect, float scale){
+    for(int i = 0; i < vect.size(); i++){
+        vect[i] *= scale;
+    }
+}
 
 
 void simulation::DHtheta_from_dot(std::vector<float>& nplane1, std::vector<float>& nplane2, float np1mag, float np2mag, float& theta){
