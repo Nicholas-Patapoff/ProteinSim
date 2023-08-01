@@ -220,7 +220,7 @@ magnitude(normbcd,normbcdmag);
 
 //2
 float dhtheta, abtheta, cdtheta;
-DHtheta_from_dot(normabc, normbcd, normabcmag, normbcdmag, dhtheta);
+DHtheta_from_dot(normabc, normbcd, orthabcmag, orthbcdmag, dhtheta);
 DHrotTheta_from_dot(dispab, dispcb, magab, magcb,abtheta);
 DHrotTheta_from_dot(dispcd, dispcb, magcd, magcb,cdtheta);
 
@@ -235,9 +235,12 @@ float forcea, forced;
 std::cout << atom1 << " " << atom4 << " theta:" << dhtheta * 180/M_PI << " thetaab:" << abtheta * 180/M_PI << " thetacd:" << cdtheta * 180/M_PI << std::endl;;
 
 
-    forcea = 0.5 * (-k * period * sin(period * dhtheta + phase))/ (sin(abtheta) * magab);//update for new mag as shown in paper. will be distance to origin plane. 
-    forced = 0.5 * (-k * period * sin(period * dhtheta + phase))/ (sin(cdtheta) * magcd);
-
+    forcea = -0.5 * (k * period * sin(period * dhtheta + phase))/ (sin(abtheta) * magab);//update for new mag as shown in paper. will be distance to origin plane. 
+    forced = -0.5 * (k * period * sin(period * dhtheta + phase))/ (sin(cdtheta) * magcd);
+    if(phase == 2){
+        forcea *= -1;
+        forced *= -1;
+    }
 
 std::vector<float> DF_additions, Fa, Fd;
 
@@ -247,19 +250,18 @@ for(int i = 0; i < 3; i++){
 }
 
 for(int i = 0; i < 3; i++){
-        //forces[atom1 * 3 + i] +=  Fa[i];
-        //forces[atom4 * 3 + i] +=  Fd[i];
+        forces[atom1 * 3 + i] +=  Fa[i];
+        forces[atom4 * 3 + i] +=  Fd[i];
     }    
-/*
 std::vector<float> dispoc;
-displacement_vect(dispoc, atom2, atom3);
+displacement_vect(dispoc, atom3, atom2);
 
 resize(dispoc, 0.5);
 resize(dispcd, 0.5);
 resize(dispab, 0.5);
 
 
-std::vector<float> ocXforced, cdXforced, baXforcea, tc, tb;
+std::vector<float> ocXforced, cdXforced, baXforcea, tc, tb, Fc, Fb;
 cross(dispoc, Fd, ocXforced);
 cross(dispcd, Fd, cdXforced);
 cross(dispab, Fa, baXforcea);
@@ -273,18 +275,29 @@ vect_add(ocXforced, cdXforced, tc);
 vect_add(tc, baXforcea, tc);
 resize(tc, -1);
 
+float ocmag;
+magnitude(dispoc, ocmag);
+ocmag = 1/(ocmag * ocmag);
+resize(tc, ocmag);
+
+cross(tc, dispoc, Fc);
+
+
+
 vect_add(Fa, Fd, tb);
-vect_add(tb, tc, tb);
+vect_add(tb, Fc, tb);
 resize(tb, -1);
+
+
 
 DF_additions.push_back(0);
 std::cout << " forces add" << std::endl;
 for(int i = 0; i < 3; i++){
-        forces[abs(atom2) * 3 + i] -=  tb[i];
-        forces[abs(atom3) * 3 + i] -=  tc[i];
+        //forces[abs(atom2) * 3 + i] +=  tb[i];
+        //forces[abs(atom3) * 3 + i] +=  Fc[i];
         std::cout << tb[i] << std::endl;
     }
-*/
+
 
 
 
@@ -336,10 +349,15 @@ void simulation::DHrotTheta_from_dot(std::vector<float>& disp1, std::vector<floa
     float cosine_value = dotted / (mag_disp1 * mag_disp2);
     cosine_value = std::max(-1.0f, std::min(1.0f, cosine_value));
     theta = acos(cosine_value);
+    
     if(theta * 180 /M_PI > 90){
         theta -= M_PI/2; 
         std::cout << "new theta " << theta * 180/M_PI << std::endl;
     }
+    
+    
+    
+    
 }
 
 void simulation::theta_from_dot(int& atom1, int& atom2, int& atom3, float& theta){
