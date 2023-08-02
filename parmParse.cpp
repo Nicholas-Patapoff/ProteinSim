@@ -9,7 +9,6 @@
 
 
 parm::parm(std::string parm7file){
-//bugged
     std::fstream nfile;
     nfile.open(parm7file, std::ios::in);
 
