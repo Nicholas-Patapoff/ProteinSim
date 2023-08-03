@@ -35,7 +35,9 @@ void simulation::update_coord(float step_size, int frames, int export_step){
             float total_f = 0;
             for(int i = 0; i < forces.size(); i++){
                 total_f += forces[i];
+                
             }
+            std::cout << total_f << std::endl;
             exports();
         }
     }
@@ -109,20 +111,69 @@ void simulation::force_additions(){ //all forces on protien for bond/FF interact
     std::unordered_map<std::string, std::vector<T> >::iterator scnb = top->values.find("SCNB_SCALE_FACTOR");
         std::vector<T>& SCNB_SF = scnb->second;  
 
+    std::unordered_map<std::string, std::vector<T> >::iterator lja = top->values.find("LENNARD_JONES_ACOEF");
+        std::vector<T>& LJAC = lja->second;  
+
+    std::unordered_map<std::string, std::vector<T> >::iterator ljb = top->values.find("LENNARD_JONES_BCOEF");
+        std::vector<T>& LJBC = ljb->second;  
+
+    std::unordered_map<std::string, std::vector<T> >::iterator ati = top->values.find("ATOM_TYPE_INDEX");
+        std::vector<T>& ATI = ati->second;  
+
+    std::unordered_map<std::string, std::vector<T> >::iterator nbpi = top->values.find("NONBONDED_PARM_INDEX");
+        std::vector<T>& NBPIndex = nbpi->second;
+
+
     for(int i = 0; i < DWoutH.size(); i+=5){
-        dihedral_force( std::get<int>(DWoutH[i]) / 3,std::get<int>(DWoutH[i + 1]) / 3, abs(std::get<int>(DWoutH[i + 2]) / 3), abs(std::get<int>(DWoutH[i + 3]) / 3), std::get<float>(DForceC[std::get<int>(DWoutH[i + 4]) - 1]), 
+        dihedral_force( std::get<int>(DWoutH[i]) / 3, std::get<int>(DWoutH[i + 1]) / 3, (std::get<int>(DWoutH[i + 2]) / 3), (std::get<int>(DWoutH[i + 3]) / 3), std::get<float>(DForceC[std::get<int>(DWoutH[i + 4]) - 1]), 
         std::get<float>(DPeriod[std::get<int>(DWoutH[i + 4]) - 1]), std::get<float>(SCEE_SF[std::get<int>(DWoutH[i + 4]) - 1]), std::get<float>(SCNB_SF[std::get<int>(DWoutH[i + 4]) - 1]), std::get<float>(DPhase[std::get<int>(DWoutH[i + 4]) - 1]));
+        
+        if((std::get<int>(DWoutH[i + 2]) / 3) >= 0){
+            float LJA, LJB;
+            int atom1, atom4;
+            atom1 = std::get<int>(DWoutH[i]) / 3;
+            atom4 = std::get<int>(DWoutH[i + 3]) / 3;
+            int temp;
+            LJA = std::get<int>(ATI[atom1]);
+            LJB = std::get<int>(ATI[abs(atom4)]);
+
+            temp = std::get<int>(NBPIndex[sqrt(NBPIndex.size()) * (LJA - 1) + LJB]);
+            //std::cout << temp << std::endl;
+            LJB = std::get<float>(LJBC[temp]);
+            LJA = std::get<float>(LJAC[temp]);
+
+
+            DH_LJF(atom1, abs(atom4), std::get<float>(SCNB_SF[std::get<int>(DWoutH[i + 4]) - 1]), LJA, LJB);
+        }
+        
+        
 
     }
     for(int i = 0; i < DincH.size(); i+=5){
         //std::cout << std::get<int>(DincH[i]) << " " << std::get<int>(DincH[i+1]) << " " << std::get<int>(DincH[i+2]) << " " << std::get<int>(DincH[i+3]) << std::endl;
-        dihedral_force( std::get<int>(DincH[i]) / 3,std::get<int>(DincH[i + 1]) / 3, abs(std::get<int>(DincH[i + 2]) / 3), abs(std::get<int>(DincH[i + 3]) / 3), std::get<float>(DForceC[std::get<int>(DincH[i + 4]) - 1]), 
+        dihedral_force( std::get<int>(DincH[i]) / 3,std::get<int>(DincH[i + 1]) / 3, (std::get<int>(DincH[i + 2]) / 3), (std::get<int>(DincH[i + 3]) / 3), std::get<float>(DForceC[std::get<int>(DincH[i + 4]) - 1]), 
         std::get<float>(DPeriod[std::get<int>(DincH[i + 4]) - 1]), std::get<float>(SCEE_SF[std::get<int>(DincH[i + 4]) - 1]), std::get<float>(SCNB_SF[std::get<int>(DincH[i + 4]) - 1]), std::get<float>(DPhase[std::get<int>(DincH[i + 4]) - 1]));
+        
+        if((std::get<int>(DincH[i + 2]) / 3) >= 0){
+            float LJA, LJB;
+            int atom1, atom4;
+            atom1 = abs(std::get<int>(DincH[i]) / 3);
+            atom4 = abs(std::get<int>(DincH[i + 3]) / 3);
 
+
+            int temp;
+            LJA = std::get<int>(ATI[atom1]);
+            LJB = std::get<int>(ATI[abs(atom4)]);
+
+            temp = std::get<int>(NBPIndex[sqrt(NBPIndex.size()) * (LJA - 1) + LJB]);
+            //std::cout << temp << std::endl;
+            LJB = std::get<float>(LJBC[temp]);
+            LJA = std::get<float>(LJAC[temp]);
+
+            
+            DH_LJF(atom1, abs(atom4), std::get<float>(SCNB_SF[std::get<int>(DincH[i + 4]) - 1]), LJA, LJB);
+        }
     }
-    
-    
-    
 }
 
 void simulation::spring_force(int atom1, int atom2, float k, float eq){
@@ -198,9 +249,9 @@ void simulation::dihedral_force(int atom1, int atom2, int atom3, int atom4, floa
 //1.
 std::vector<float> dispba, dispbc, dispcb, dispcd;
 displacement_vect(dispba, atom1, atom2);
-displacement_vect(dispbc, atom3, atom2);
-displacement_vect(dispcb, atom2, atom3);
-displacement_vect(dispcd, atom4, atom3);
+displacement_vect(dispbc, abs(atom3), atom2);
+displacement_vect(dispcb, atom2, abs(atom3));
+displacement_vect(dispcd, abs(atom4), abs(atom3));
 
 std::vector<float> orthaabc, orthabcd;
 cross(dispba, dispbc, orthaabc);
@@ -224,10 +275,12 @@ DHrotTheta_from_dot(dispbc, dispcd, magbc, magcd, cd_theta);
 DHtheta_from_dot(northabc, northbcd, magorthabc, magorthbcd, DH_theta);
 
 for(int i = 0; i < 3; i++){
+
     Fa.push_back(-0.5 * period * k * sin(period*DH_theta + phase)/(magba * sin(ab_theta)));
     Fd.push_back(-0.5 * period * k * sin(period*DH_theta + phase)/(magcd * sin(cd_theta)));
     Fa[i] *= northabc[i];
     Fd[i] *= northbcd[i];
+
 }
 
 if(period ==2){
@@ -237,7 +290,7 @@ if(period ==2){
 
 
 std::vector<float> dispoc, tc, tb, ocXFd, cdXFd, baXFa, Fc;
-displacement_vect(dispoc, atom3, atom2);
+displacement_vect(dispoc, abs(atom3), atom2);
 resize(dispoc, 0.5);
 resize(dispcd, 0.5);
 resize(dispba, 0.5);
@@ -283,8 +336,8 @@ for(int i = 0; i < 3; i++){
     dispoa.push_back(0);
     dispod.push_back(0);
 }
-displacement_vect(dispoc2, atom3, atom2);
-displacement_vect(dispob, atom2, atom3);
+displacement_vect(dispoc2, abs(atom3), atom2);
+displacement_vect(dispob, atom2, abs(atom3));
 resize(dispoc2, 0.5);
 resize(dispob, 0.5);
 vect_add(dispba, dispob, dispoa);
@@ -301,7 +354,7 @@ float total = 0;
 for(int i = 0; i < 3; i++){
 total += torqoa[i] + torqob[i] + torqoc[i] + torqod[i];
 }
-std::cout << total << std::endl;
+//std::cout << total << std::endl;
 //SUM OF TROQUES
 
 
@@ -309,8 +362,8 @@ if(ab_theta){
     for(int i = 0; i < 3; i++){
         forces[atom1 * 3 + i] += Fa[i];
         forces[atom2 * 3 + i] += tb[i];
-        forces[atom3 * 3 + i] += Fc[i];
-        forces[atom4 * 3 + i] += Fd[i];
+        forces[abs(atom3) * 3 + i] += Fc[i];
+        forces[abs(atom4) * 3 + i] += Fd[i];
     }
 }
 
@@ -318,14 +371,43 @@ if(ab_theta){
 
 }
 
+
+void simulation::DH_LJF(int atom1, int atom4, float SCNBF, float LJA, float LJB){
+
+    std::vector<float> dispad, normad;
+    displacement_vect(dispad, atom4, atom1);
+    float magad;
+    magnitude(dispad, magad);
+    unit_vector(magad, dispad, normad);
+    float distance = sqrt(dispad[0]*dispad[0] + dispad[1]*dispad[1] + dispad[2]*dispad[2]);
+
+    float Fa = 6/distance * (2 * LJA/pow(distance, 12) - LJB/pow(distance, 6))/SCNBF;
+
+    
+
+
+    if(SCNBF != 0){
+        for(int i = 0; i < 3; i++){
+        forces[atom1 * 3 + i] -= Fa * normad[i];
+        forces[atom4 * 3 + i] += Fa * normad[i];
+    }
+    }
+
+
+
+
+
+}
+
+
 void simulation::DHrotTheta_from_dot(std::vector<float>& disp1, std::vector<float>& disp2, float& mag_disp1, float& mag_disp2, float& theta){
     float dotted = 0;
     dot(disp1, disp2, dotted);
     float cosine_value = dotted / (mag_disp1 * mag_disp2);
     cosine_value = std::max(-1.0f, std::min(1.0f, cosine_value));
     theta = acos(cosine_value);
-    
-    
+
+
 }
 void simulation::vect_add(std::vector<float>& v1, std::vector<float>& v2, std::vector<float>& product){
 

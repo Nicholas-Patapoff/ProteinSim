@@ -23,6 +23,7 @@ void DHtheta_from_dot(std::vector<float>& nplane1, std::vector<float>& nplane2, 
 void DHrotTheta_from_dot(std::vector<float>& disp1, std::vector<float>& disp2, float& mag_disp1, float& mag_disp2, float& theta);
 void resize(std::vector<float>& vect, float scale);
 void vect_add(std::vector<float>& v1, std::vector<float>& v2, std::vector<float>& product);
+void DH_LJF(int atom1, int atom4, float SCNBF, float LJA, float LJB);
 using T = std::variant<int, float, std::string>;
 
 public:
