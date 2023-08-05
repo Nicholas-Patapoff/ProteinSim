@@ -283,10 +283,6 @@ for(int i = 0; i < 3; i++){
 
 }
 
-if(period ==2){
-    resize(Fa, -1);
-    resize(Fd, -1);
-}
 
 
 std::vector<float> dispoc, tc, tb, ocXFd, cdXFd, baXFa, Fc;
@@ -354,7 +350,7 @@ float total = 0;
 for(int i = 0; i < 3; i++){
 total += torqoa[i] + torqob[i] + torqoc[i] + torqod[i];
 }
-//std::cout << total << std::endl;
+std::cout << total << std::endl;
 //SUM OF TROQUES
 
 
