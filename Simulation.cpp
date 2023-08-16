@@ -19,6 +19,8 @@ simulation::simulation(Environment& temp1, parm& temp2, float step, std::string 
     velocities = std::vector<float>(coord->Acoords.size(), 0);
     forces = std::vector<float>(coord->Acoords.size(), 0);
     
+    bwh = temp2.values.find("BONDS_WITHOUT_HYDROGEN");
+    BWoutH = bwh->second;
 
 
     temp_file.open("/home/nich/Documents/GitHub/coord_vis/" + export_name +".crd", std::ios::out);
@@ -27,6 +29,10 @@ simulation::simulation(Environment& temp1, parm& temp2, float step, std::string 
 
 
 void simulation::update_coord(float step_size, int frames, int export_step){
+
+
+
+    
     for(int i = 0; i <= frames; i++){
         VerletAlg(step_size);
         
@@ -44,6 +50,9 @@ void simulation::update_coord(float step_size, int frames, int export_step){
 }
 
 void simulation::force_additions(){ //all forces on protien for bond/FF interactions
+
+    //TO-DO: create static variables of values- that way there is no need to make a new var every frame
+
 
     //bond forces
     std::unordered_map<std::string, std::vector<T> >::iterator bwh = top->values.find("BONDS_WITHOUT_HYDROGEN");
@@ -150,7 +159,7 @@ void simulation::force_additions(){ //all forces on protien for bond/FF interact
 
     }
     for(int i = 0; i < DincH.size(); i+=5){
-        //std::cout << std::get<int>(DincH[i]) << " " << std::get<int>(DincH[i+1]) << " " << std::get<int>(DincH[i+2]) << " " << std::get<int>(DincH[i+3]) << std::endl;
+
         dihedral_force( std::get<int>(DincH[i]) / 3,std::get<int>(DincH[i + 1]) / 3, (std::get<int>(DincH[i + 2]) / 3), (std::get<int>(DincH[i + 3]) / 3), std::get<float>(DForceC[std::get<int>(DincH[i + 4]) - 1]), 
         std::get<float>(DPeriod[std::get<int>(DincH[i + 4]) - 1]), std::get<float>(SCEE_SF[std::get<int>(DincH[i + 4]) - 1]), std::get<float>(SCNB_SF[std::get<int>(DincH[i + 4]) - 1]), std::get<float>(DPhase[std::get<int>(DincH[i + 4]) - 1]));
         
@@ -166,11 +175,13 @@ void simulation::force_additions(){ //all forces on protien for bond/FF interact
             LJB = std::get<int>(ATI[abs(atom4)]);
 
             temp = std::get<int>(NBPIndex[sqrt(NBPIndex.size()) * (LJA - 1) + LJB]);
-            //std::cout << temp << std::endl;
+            
             LJB = std::get<float>(LJBC[temp]);
             LJA = std::get<float>(LJAC[temp]);
 
+
             
+
             DH_LJF(atom1, abs(atom4), std::get<float>(SCNB_SF[std::get<int>(DincH[i + 4]) - 1]), LJA, LJB);
         }
     }
@@ -236,7 +247,7 @@ void simulation::angle_force(int atom1, int atom2, int atom3, float k, float eq)
         
     }    
 
-}
+}   
 
 void simulation::dihedral_force(int atom1, int atom2, int atom3, int atom4, float k, float period, float sceef, float scnbf, float phase){
 //torsion potential is defined as U= 0.5[A1(1 + cos(theta)) + A2(1 - cos2theta)) + A3(1 + cost(3theta)) + A4]
@@ -276,8 +287,8 @@ DHtheta_from_dot(northabc, northbcd, magorthabc, magorthbcd, DH_theta);
 
 for(int i = 0; i < 3; i++){
 
-    Fa.push_back(-0.5 * period * k * sin(period*DH_theta + phase)/(magba * sin(ab_theta)));
-    Fd.push_back(-0.5 * period * k * sin(period*DH_theta + phase)/(magcd * sin(cd_theta)));
+    Fa.push_back(0.5 * period * k * sin(period*DH_theta + phase)/(magba * sin(ab_theta)));
+    Fd.push_back(0.5 * period * k * sin(period*DH_theta + phase)/(magcd * sin(cd_theta)));
     Fa[i] *= northabc[i];
     Fd[i] *= northbcd[i];
 
@@ -350,7 +361,7 @@ float total = 0;
 for(int i = 0; i < 3; i++){
 total += torqoa[i] + torqob[i] + torqoc[i] + torqod[i];
 }
-std::cout << total << std::endl;
+//std::cout << total << std::endl;
 //SUM OF TROQUES
 
 
@@ -377,7 +388,7 @@ void simulation::DH_LJF(int atom1, int atom4, float SCNBF, float LJA, float LJB)
     unit_vector(magad, dispad, normad);
     float distance = sqrt(dispad[0]*dispad[0] + dispad[1]*dispad[1] + dispad[2]*dispad[2]);
 
-    float Fa = 6/distance * (2 * LJA/pow(distance, 12) - LJB/pow(distance, 6))/SCNBF;
+    float Fa = 6/distance * (2 * LJA/(pow(distance, 12)) - LJB/pow(distance, 6))/SCNBF;
 
     
 

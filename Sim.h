@@ -25,6 +25,9 @@ void resize(std::vector<float>& vect, float scale);
 void vect_add(std::vector<float>& v1, std::vector<float>& v2, std::vector<float>& product);
 void DH_LJF(int atom1, int atom4, float SCNBF, float LJA, float LJB);
 using T = std::variant<int, float, std::string>;
+std::unordered_map<std::string, std::vector<T> >::iterator bwh;
+std::vector<T>& BWoutH;
+
 
 public:
 std::vector<float> velocities;
