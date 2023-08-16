@@ -14,7 +14,6 @@ parm test("chig_ext.parm7");
 
 simulation small_probe(PISUM_SATIVUM, test, 1, "chig");
 
-small_probe.force_additions();
 small_probe.update_coord(0.01, 20000, 5);
 
 

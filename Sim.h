@@ -10,6 +10,7 @@
 
 class simulation{
 private:
+using T = std::variant<int, float, std::string>;
 std::unique_ptr<Environment> coord;
 std::unique_ptr<parm> top;
 std::fstream temp_file;
@@ -24,9 +25,6 @@ void DHrotTheta_from_dot(std::vector<float>& disp1, std::vector<float>& disp2, f
 void resize(std::vector<float>& vect, float scale);
 void vect_add(std::vector<float>& v1, std::vector<float>& v2, std::vector<float>& product);
 void DH_LJF(int atom1, int atom4, float SCNBF, float LJA, float LJB);
-using T = std::variant<int, float, std::string>;
-std::unordered_map<std::string, std::vector<T> >::iterator bwh;
-std::vector<T>& BWoutH;
 
 
 public:
@@ -39,8 +37,14 @@ simulation(Environment& coord, parm& top, float step, std::string export_name);
 void update_coord(float step_size, int frames, int export_step);
 void exports();
 void spring_force(int atom1, int atom2, float kval, float eq);
-void force_additions();
-void VerletAlg(float& step); 
+void force_additions(std::vector<T>& BWoutH, std::vector<T>& BIH, std::vector<T>& BForceC, std::vector<T>& BEQV, std::vector<T>& AWoutH,
+ std::vector<T>& AIH,std::vector<T>& AForceC, std::vector<T>& AEQV, std::vector<T>& DincH, std::vector<T>& DWoutH, std::vector<T>& DForceC, 
+ std::vector<T>& DPeriod , std::vector<T>& DPhase, std::vector<T>& SCEE_SF, std::vector<T>& SCNB_SF, std::vector<T>& LJAC, std::vector<T>& LJBC,std::vector<T>& ATI,
+  std::vector<T>& NBPIndex);
+void VerletAlg(float& step, std::vector<T>& BWoutH, std::vector<T>& BIH, std::vector<T>& BForceC, std::vector<T>& BEQV, std::vector<T>& AWoutH,
+ std::vector<T>& AIH,std::vector<T>& AForceC, std::vector<T>& AEQV, std::vector<T>& DincH, std::vector<T>& DWoutH, std::vector<T>& DForceC, 
+ std::vector<T>& DPeriod , std::vector<T>& DPhase, std::vector<T>& SCEE_SF, std::vector<T>& SCNB_SF, std::vector<T>& LJAC, std::vector<T>& LJBC,std::vector<T>& ATI,
+  std::vector<T>& NBPIndex); 
 void angle_force(int atom1, int atom2, int atom3, float k, float eq);
 void dihedral_force(int atom1, int atom2, int atom3, int atom4, float k, float period, float sceef, float scnbf, float phase);
 

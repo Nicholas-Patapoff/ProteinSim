@@ -15,13 +15,9 @@ simulation::simulation(Environment& temp1, parm& temp2, float step, std::string 
     top = std::make_unique<parm>(temp2);
 
 
-
     velocities = std::vector<float>(coord->Acoords.size(), 0);
     forces = std::vector<float>(coord->Acoords.size(), 0);
     
-    bwh = temp2.values.find("BONDS_WITHOUT_HYDROGEN");
-    BWoutH = bwh->second;
-
 
     temp_file.open("/home/nich/Documents/GitHub/coord_vis/" + export_name +".crd", std::ios::out);
     temp_file << std::endl;
@@ -29,32 +25,7 @@ simulation::simulation(Environment& temp1, parm& temp2, float step, std::string 
 
 
 void simulation::update_coord(float step_size, int frames, int export_step){
-
-
-
-    
-    for(int i = 0; i <= frames; i++){
-        VerletAlg(step_size);
-        
-        if(i % export_step == 0) {
-            std::cout<< (float) i / frames * 100 << "% complete!" << std::endl;
-            float total_f = 0;
-            for(int i = 0; i < forces.size(); i++){
-                total_f += forces[i];
-                
-            }
-            std::cout << total_f << std::endl;
-            exports();
-        }
-    }
-}
-
-void simulation::force_additions(){ //all forces on protien for bond/FF interactions
-
-    //TO-DO: create static variables of values- that way there is no need to make a new var every frame
-
-
-    //bond forces
+    //initialize bond force constants 
     std::unordered_map<std::string, std::vector<T> >::iterator bwh = top->values.find("BONDS_WITHOUT_HYDROGEN");
         std::vector<T>& BWoutH = bwh->second;
     
@@ -66,16 +37,9 @@ void simulation::force_additions(){ //all forces on protien for bond/FF interact
 
     std::unordered_map<std::string, std::vector<T> >::iterator bev = top->values.find("BOND_EQUIL_VALUE");
         std::vector<T>& BEQV = bev->second;
-    for(int i = 0; i < BWoutH.size() - 1; i+=3){ //BWoutH.size()
-        spring_force( std::get<int>(BWoutH[i]) / 3,std::get<int>(BWoutH[i + 1]) / 3, std::get<float>(BForceC[std::get<int>(BWoutH[i + 2]) - 1]), std::get<float>(BEQV[std::get<int>(BWoutH[i + 2]) - 1]) );
-
-    }
-    for(int i = 0; i < BIH.size(); i+=3){ // this is a bond which include hydrogen. I want to stiffen interaction so as to reduce computational complexity. I can set up a method for selecting a model and integrate it into there
-        spring_force( std::get<int>(BIH[i]) / 3,std::get<int>(BIH[i + 1]) / 3, std::get<float>(BForceC[std::get<int>(BIH[i + 2]) - 1]), std::get<float>(BEQV[std::get<int>(BIH[i + 2]) - 1]) );
-    }
 
 
-    //angle forces
+    //initialize angle force constants
     std::unordered_map<std::string, std::vector<T> >::iterator awh = top->values.find("ANGLES_WITHOUT_HYDROGEN");
         std::vector<T>& AWoutH = awh->second;
 
@@ -88,17 +52,8 @@ void simulation::force_additions(){ //all forces on protien for bond/FF interact
     std::unordered_map<std::string, std::vector<T> >::iterator aev = top->values.find("ANGLE_EQUIL_VALUE");
         std::vector<T>& AEQV = aev->second;
 
-    for(int i = 0; i < AWoutH.size(); i+=4){
-        angle_force( std::get<int>(AWoutH[i]) / 3,std::get<int>(AWoutH[i + 1]) / 3, std::get<int>(AWoutH[i + 2]) / 3, std::get<float>(AForceC[std::get<int>(AWoutH[i + 3]) - 1]), std::get<float>(AEQV[std::get<int>(AWoutH[i + 3]) - 1]));
 
-    }
-
-    for(int i = 0; i < AIH.size() - 1; i+=4){ 
-        angle_force( std::get<int>(AIH[i]) / 3,std::get<int>(AIH[i + 1]) / 3, std::get<int>(AIH[i + 2]) / 3, std::get<float>(AForceC[std::get<int>(AIH[i + 3]) - 1]), std::get<float>(AEQV[std::get<int>(AIH[i + 3]) - 1]));
-
-    }
-
-    //Dihedral forces
+    //initialize DIH force constants
     std::unordered_map<std::string, std::vector<T> >::iterator dih = top->values.find("DIHEDRALS_INC_HYDROGEN");
         std::vector<T>& DincH = dih->second;
 
@@ -131,6 +86,59 @@ void simulation::force_additions(){ //all forces on protien for bond/FF interact
 
     std::unordered_map<std::string, std::vector<T> >::iterator nbpi = top->values.find("NONBONDED_PARM_INDEX");
         std::vector<T>& NBPIndex = nbpi->second;
+
+
+
+    for(int i = 0; i <= frames; i++){
+        VerletAlg(step_size,  BWoutH,  BIH,  BForceC, BEQV,  AWoutH,
+  AIH, AForceC, AEQV,  DincH,  DWoutH,  DForceC, 
+ DPeriod ,  DPhase,  SCEE_SF,  SCNB_SF, LJAC,  LJBC, ATI,
+ NBPIndex);
+        
+        if(i % export_step == 0) {
+            std::cout<< (float) i / frames * 100 << "% complete!" << std::endl;
+            float total_f = 0;
+            for(int i = 0; i < forces.size(); i++){
+                total_f += forces[i];
+                
+            }
+            std::cout << total_f << std::endl;
+            exports();
+        }
+    }
+}
+
+void simulation::force_additions(std::vector<T>& BWoutH, std::vector<T>& BIH, std::vector<T>& BForceC, std::vector<T>& BEQV, std::vector<T>& AWoutH,
+ std::vector<T>& AIH,std::vector<T>& AForceC, std::vector<T>& AEQV, std::vector<T>& DincH, std::vector<T>& DWoutH, std::vector<T>& DForceC, 
+ std::vector<T>& DPeriod , std::vector<T>& DPhase, std::vector<T>& SCEE_SF, std::vector<T>& SCNB_SF, std::vector<T>& LJAC, std::vector<T>& LJBC,std::vector<T>& ATI,
+  std::vector<T>& NBPIndex){ //all forces on protien for bond/FF interactions
+
+
+
+    //bond forces
+    for(int i = 0; i < BWoutH.size() - 1; i+=3){ //BWoutH.size()
+        spring_force( std::get<int>(BWoutH[i]) / 3,std::get<int>(BWoutH[i + 1]) / 3, std::get<float>(BForceC[std::get<int>(BWoutH[i + 2]) - 1]), std::get<float>(BEQV[std::get<int>(BWoutH[i + 2]) - 1]) );
+    
+    }
+    for(int i = 0; i < BIH.size(); i+=3){ // this is a bond which include hydrogen. I want to stiffen interaction so as to reduce computational complexity. I can set up a method for selecting a model and integrate it into there
+        spring_force( std::get<int>(BIH[i]) / 3,std::get<int>(BIH[i + 1]) / 3, std::get<float>(BForceC[std::get<int>(BIH[i + 2]) - 1]), std::get<float>(BEQV[std::get<int>(BIH[i + 2]) - 1]) );
+    }
+
+
+    //angle forces
+    
+    for(int i = 0; i < AWoutH.size(); i+=4){
+        angle_force( std::get<int>(AWoutH[i]) / 3,std::get<int>(AWoutH[i + 1]) / 3, std::get<int>(AWoutH[i + 2]) / 3, std::get<float>(AForceC[std::get<int>(AWoutH[i + 3]) - 1]), std::get<float>(AEQV[std::get<int>(AWoutH[i + 3]) - 1]));
+
+    }
+
+    for(int i = 0; i < AIH.size() - 1; i+=4){ 
+        angle_force( std::get<int>(AIH[i]) / 3,std::get<int>(AIH[i + 1]) / 3, std::get<int>(AIH[i + 2]) / 3, std::get<float>(AForceC[std::get<int>(AIH[i + 3]) - 1]), std::get<float>(AEQV[std::get<int>(AIH[i + 3]) - 1]));
+
+    }
+
+    //Dihedral forces
+    
 
 
     for(int i = 0; i < DWoutH.size(); i+=5){
@@ -501,7 +509,10 @@ void simulation::displacement_vect(std::vector<float>& d, int atom1, int atom2){
     }
 }
 
-void simulation::VerletAlg(float& step_size){
+void simulation::VerletAlg(float& step_size, std::vector<T>& BWoutH, std::vector<T>& BIH, std::vector<T>& BForceC, std::vector<T>& BEQV, std::vector<T>& AWoutH,
+ std::vector<T>& AIH,std::vector<T>& AForceC, std::vector<T>& AEQV, std::vector<T>& DincH, std::vector<T>& DWoutH, std::vector<T>& DForceC, 
+ std::vector<T>& DPeriod , std::vector<T>& DPhase, std::vector<T>& SCEE_SF, std::vector<T>& SCNB_SF, std::vector<T>& LJAC, std::vector<T>& LJBC,std::vector<T>& ATI,
+  std::vector<T>& NBPIndex){
     std::unordered_map<std::string, std::vector<T> >::iterator ms = top->values.find("MASS");
         std::vector<T>& Mass = ms->second;
 for(int atom = 0; atom < velocities.size(); atom++){
@@ -511,7 +522,10 @@ for(int atom = 0; atom < coord->Acoords.size(); atom++){
     coord->Acoords[atom] = coord->Acoords[atom] + velocities[atom]*step_size;
 }
 forces.assign(forces.size(), 0);
-force_additions();
+force_additions(BWoutH,  BIH,  BForceC, BEQV,  AWoutH,
+  AIH, AForceC, AEQV,  DincH,  DWoutH,  DForceC, 
+ DPeriod ,  DPhase,  SCEE_SF,  SCNB_SF, LJAC,  LJBC, ATI,
+ NBPIndex);
 for(int atom = 0; atom < velocities.size(); atom++){
    velocities[atom] = velocities[atom] + forces[atom]*step_size / (2 * std::get<float>(Mass[atom/(int)3]) );
    
