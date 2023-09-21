@@ -134,8 +134,6 @@ void simulation::force_additions(std::vector<T>& BWoutH, std::vector<T>& BIH, st
   std::vector<T>& NBPIndex, std::vector<std::vector<int> >& excluded){ //all forces on protien for bond/FF interactions
 
 
-/*
-
 
     //bond forces
     for(int i = 0; i < BWoutH.size() - 1; i+=3){ //BWoutH.size()
@@ -178,8 +176,8 @@ void simulation::force_additions(std::vector<T>& BWoutH, std::vector<T>& BIH, st
 
             temp = std::get<int>(NBPIndex[sqrt(NBPIndex.size()) * (LJA - 1) + LJB]);
             //std::cout << temp << std::endl;
-            LJB = std::get<float>(LJBC[temp]);
-            LJA = std::get<float>(LJAC[temp]);
+            LJB = std::get<float>(LJBC[temp - 1]);
+            LJA = std::get<float>(LJAC[temp - 1]);
 
 
             DH_LJF(atom1, abs(atom4), std::get<float>(SCNB_SF[std::get<int>(DWoutH[i + 4]) - 1]), LJA, LJB);
@@ -206,8 +204,8 @@ void simulation::force_additions(std::vector<T>& BWoutH, std::vector<T>& BIH, st
 
             temp = std::get<int>(NBPIndex[sqrt(NBPIndex.size()) * (LJA - 1) + LJB]);
             
-            LJB = std::get<float>(LJBC[temp]);
-            LJA = std::get<float>(LJAC[temp]);
+            LJA = std::get<float>(LJAC[temp - 1]);
+            LJB = std::get<float>(LJBC[temp - 1]);
 
 
             
@@ -215,7 +213,7 @@ void simulation::force_additions(std::vector<T>& BWoutH, std::vector<T>& BIH, st
             DH_LJF(atom1, abs(atom4), std::get<float>(SCNB_SF[std::get<int>(DincH[i + 4]) - 1]), LJA, LJB);
         }
     }
-*/
+
     //LJ/hbond forces
     for(int i = 0; i < ATI.size(); i++){
         for(int y = i + 1; y < ATI.size(); y++){
@@ -226,19 +224,22 @@ void simulation::force_additions(std::vector<T>& BWoutH, std::vector<T>& BIH, st
                 }
                 }
             if(check == 1){
-                continue;
-            }
-            float A, B; //must do a check that a1 and a2 are not on their atom exlusion list!!!
+                ;
+            } else {
+            float A, B; 
             int a1 = i; 
             int a2 = y;
             A = std::get<int>(ATI[a1]);
-            B = std::get<int>(ATI[(a2)]);
+            B = std::get<int>(ATI[a2]);
             int temp = std::get<int>(NBPIndex[sqrt(NBPIndex.size()) * (A - 1) + B]);
-            if(temp > 0){
-               A = std::get<float>(LJAC[temp]); 
-               B = std::get<float>(LJBC[temp]); 
-             LennardJ_force(i, y, A, B);
+            if(temp >= 0){
+            A = std::get<float>(LJAC[temp - 1]); 
+            B = std::get<float>(LJBC[temp - 1]); 
+            LennardJ_force(i, y, A, B);
             }
+
+             
+            
             
             
             
@@ -252,7 +253,7 @@ void simulation::force_additions(std::vector<T>& BWoutH, std::vector<T>& BIH, st
     //for atom1 and atom2 given, if the found non-bonded_parm_index is positive -> assign LJA and LJB and find LJ force
     // else index is negative, assign HBA and HBB, find the Hydrogen bond for
 
-
+    }
 }
 
 void simulation::spring_force(int atom1, int atom2, float k, float eq){
@@ -441,9 +442,6 @@ if(ab_theta){
         forces[abs(atom4) * 3 + i] += Fd[i];
     }
 }
-
-
-
 }
 
 void simulation::LennardJ_force(int atom1,int atom2, float LJA, float LJB){
@@ -452,10 +450,18 @@ std::vector<float> dispad, normad;
     float magad;
     magnitude(dispad, magad);
     unit_vector(magad, dispad, normad);
-    float distance = sqrt(dispad[0]*dispad[0] + dispad[1]*dispad[1] + dispad[2]*dispad[2]);
 
-    float Fa = 6/distance * (2 * LJA/(pow(distance, 12)) - LJB/pow(distance, 6));
-
+    float Fa = 6/magad * (2 * LJA/(pow(magad, 12)) - LJB/pow(magad, 6));
+    if(magad < 1){
+        printf("%d to %d, %f\n", atom1, atom2, magad);
+        printf("LJA %f\n", LJA);
+        printf("LJB %f\n", LJB);
+        printf("%f\n", Fa);
+    }
+for(int i = 0; i < 3; i++){
+        forces[atom1 * 3 + i] -= Fa * normad[i];
+        forces[atom2 * 3 + i] += Fa * normad[i];
+    }
 
 }
 
@@ -466,9 +472,8 @@ void simulation::DH_LJF(int atom1, int atom4, float SCNBF, float LJA, float LJB)
     float magad;
     magnitude(dispad, magad);
     unit_vector(magad, dispad, normad);
-    float distance = sqrt(dispad[0]*dispad[0] + dispad[1]*dispad[1] + dispad[2]*dispad[2]);
 
-    float Fa = 6/distance * (2 * LJA/(pow(distance, 12)) - LJB/pow(distance, 6))/SCNBF;
+    float Fa = 6/magad * (2 * LJA/(pow(magad, 12)) - LJB/pow(magad, 6))/SCNBF;
 
     
 
