@@ -5,6 +5,7 @@
 #include "Env.h"
 #include "parm.h"
 #include "Sim.h"
+#include "Vector_Math.h"
 #include <math.h>
 #include <thread>
 #include <iomanip>
@@ -86,33 +87,54 @@ void simulation::update_coord(float step_size, int frames, int export_step){
 
     std::unordered_map<std::string, std::vector<T> >::iterator nbpi = top->values.find("NONBONDED_PARM_INDEX");
         std::vector<T>& NBPIndex = nbpi->second;
+  
+    //import excluded atoms 
+    std::unordered_map<std::string, std::vector<T> >::iterator nea = top->values.find("NUMBER_EXCLUDED_ATOMS");
+        std::vector<T>& NEA = nea->second;
+    std::unordered_map<std::string, std::vector<T> >::iterator eal = top->values.find("EXCLUDED_ATOMS_LIST");
+        std::vector<T>& EAL = eal->second;
+
+    std::vector<std::vector<int> > excluded;
+    int count = 0;
+    for(int i = 0; i < NEA.size(); i++){
+        std::vector<int> temp;
+
+        for(int y = count; y < count + std::get<int> (NEA[i]); y++){
+            temp.push_back(std::get<int>(EAL[y]));
+
+    }
+        count += std::get<int> (NEA[i]);
+        excluded.push_back(temp);
+    }
 
 
 
-    for(int i = 0; i <= frames; i++){
+for(int i = 0; i <= frames; i++){
         VerletAlg(step_size,  BWoutH,  BIH,  BForceC, BEQV,  AWoutH,
   AIH, AForceC, AEQV,  DincH,  DWoutH,  DForceC, 
  DPeriod ,  DPhase,  SCEE_SF,  SCNB_SF, LJAC,  LJBC, ATI,
- NBPIndex);
+ NBPIndex, excluded);
         
         if(i % export_step == 0) {
             std::cout<< (float) i / frames * 100 << "% complete!" << std::endl;
             float total_f = 0;
-            for(int i = 0; i < forces.size(); i++){
-                total_f += forces[i];
-                
-            }
-            std::cout << total_f << std::endl;
             exports();
         }
     }
+
+
+
+
+    
 }
 
 void simulation::force_additions(std::vector<T>& BWoutH, std::vector<T>& BIH, std::vector<T>& BForceC, std::vector<T>& BEQV, std::vector<T>& AWoutH,
  std::vector<T>& AIH,std::vector<T>& AForceC, std::vector<T>& AEQV, std::vector<T>& DincH, std::vector<T>& DWoutH, std::vector<T>& DForceC, 
  std::vector<T>& DPeriod , std::vector<T>& DPhase, std::vector<T>& SCEE_SF, std::vector<T>& SCNB_SF, std::vector<T>& LJAC, std::vector<T>& LJBC,std::vector<T>& ATI,
-  std::vector<T>& NBPIndex){ //all forces on protien for bond/FF interactions
+  std::vector<T>& NBPIndex, std::vector<std::vector<int> >& excluded){ //all forces on protien for bond/FF interactions
 
+
+/*
 
 
     //bond forces
@@ -193,6 +215,44 @@ void simulation::force_additions(std::vector<T>& BWoutH, std::vector<T>& BIH, st
             DH_LJF(atom1, abs(atom4), std::get<float>(SCNB_SF[std::get<int>(DincH[i + 4]) - 1]), LJA, LJB);
         }
     }
+*/
+    //LJ/hbond forces
+    for(int i = 0; i < ATI.size(); i++){
+        for(int y = i + 1; y < ATI.size(); y++){
+            int check = 0;
+            for(int exc = 0; exc < excluded[i].size(); exc++){
+                if(excluded[i][exc] == y + 1){
+                    check = 1;
+                }
+                }
+            if(check == 1){
+                continue;
+            }
+            float A, B; //must do a check that a1 and a2 are not on their atom exlusion list!!!
+            int a1 = i; 
+            int a2 = y;
+            A = std::get<int>(ATI[a1]);
+            B = std::get<int>(ATI[(a2)]);
+            int temp = std::get<int>(NBPIndex[sqrt(NBPIndex.size()) * (A - 1) + B]);
+            if(temp > 0){
+               A = std::get<float>(LJAC[temp]); 
+               B = std::get<float>(LJBC[temp]); 
+             LennardJ_force(i, y, A, B);
+            }
+            
+            
+            
+            //1. import excluded_atoms_list
+            //2. import number_excluded_atoms
+            //3. atom excluded_atoms_list = i * 2; 
+            //4. 
+            
+        }
+    }
+    //for atom1 and atom2 given, if the found non-bonded_parm_index is positive -> assign LJA and LJB and find LJ force
+    // else index is negative, assign HBA and HBB, find the Hydrogen bond for
+
+
 }
 
 void simulation::spring_force(int atom1, int atom2, float k, float eq){
@@ -200,7 +260,7 @@ void simulation::spring_force(int atom1, int atom2, float k, float eq){
     float dmag;
     std::vector<float> dunit_vect;
 
-    displacement_vect(disp, atom1, atom2);
+    displacement_vect(disp,coord->Acoords, atom1, atom2);
     magnitude(disp, dmag);
     unit_vector(dmag, disp, dunit_vect);
 
@@ -223,9 +283,9 @@ void simulation::angle_force(int atom1, int atom2, int atom3, float k, float eq)
     //then take the total of both as a negative ( - f12 - f23) and then we obtain force on atom 2. since -FA + -FC = FB;
     
     std::vector<float> disp1, disp2, dispac;
-    displacement_vect(disp1, atom1, atom2);
-    displacement_vect(disp2, atom3, atom2);
-    displacement_vect(dispac, atom1, atom3);
+    displacement_vect(disp1,coord->Acoords, atom1, atom2);
+    displacement_vect(disp2,coord->Acoords, atom3, atom2);
+    displacement_vect(dispac,coord->Acoords, atom1, atom3);
 
     std::vector<float> orth_abc, inp_ba, inp_bc;
     cross(disp1, disp2, orth_abc);
@@ -267,10 +327,10 @@ void simulation::dihedral_force(int atom1, int atom2, int atom3, int atom4, floa
 
 //1.
 std::vector<float> dispba, dispbc, dispcb, dispcd;
-displacement_vect(dispba, atom1, atom2);
-displacement_vect(dispbc, abs(atom3), atom2);
-displacement_vect(dispcb, atom2, abs(atom3));
-displacement_vect(dispcd, abs(atom4), abs(atom3));
+displacement_vect(dispba,coord->Acoords, atom1, atom2);
+displacement_vect(dispbc,coord->Acoords, abs(atom3), atom2);
+displacement_vect(dispcb,coord->Acoords, atom2, abs(atom3));
+displacement_vect(dispcd,coord->Acoords, abs(atom4), abs(atom3));
 
 std::vector<float> orthaabc, orthabcd;
 cross(dispba, dispbc, orthaabc);
@@ -305,7 +365,7 @@ for(int i = 0; i < 3; i++){
 
 
 std::vector<float> dispoc, tc, tb, ocXFd, cdXFd, baXFa, Fc;
-displacement_vect(dispoc, abs(atom3), atom2);
+displacement_vect(dispoc, coord->Acoords, abs(atom3), atom2);
 resize(dispoc, 0.5);
 resize(dispcd, 0.5);
 resize(dispba, 0.5);
@@ -351,8 +411,8 @@ for(int i = 0; i < 3; i++){
     dispoa.push_back(0);
     dispod.push_back(0);
 }
-displacement_vect(dispoc2, abs(atom3), atom2);
-displacement_vect(dispob, atom2, abs(atom3));
+displacement_vect(dispoc2,coord->Acoords, abs(atom3), atom2);
+displacement_vect(dispob, coord->Acoords, atom2, abs(atom3));
 resize(dispoc2, 0.5);
 resize(dispob, 0.5);
 vect_add(dispba, dispob, dispoa);
@@ -386,11 +446,23 @@ if(ab_theta){
 
 }
 
+void simulation::LennardJ_force(int atom1,int atom2, float LJA, float LJB){
+std::vector<float> dispad, normad;
+    displacement_vect(dispad, coord->Acoords, atom2, atom1);
+    float magad;
+    magnitude(dispad, magad);
+    unit_vector(magad, dispad, normad);
+    float distance = sqrt(dispad[0]*dispad[0] + dispad[1]*dispad[1] + dispad[2]*dispad[2]);
+
+    float Fa = 6/distance * (2 * LJA/(pow(distance, 12)) - LJB/pow(distance, 6));
+
+
+}
 
 void simulation::DH_LJF(int atom1, int atom4, float SCNBF, float LJA, float LJB){
 
     std::vector<float> dispad, normad;
-    displacement_vect(dispad, atom4, atom1);
+    displacement_vect(dispad, coord->Acoords, atom4, atom1);
     float magad;
     magnitude(dispad, magad);
     unit_vector(magad, dispad, normad);
@@ -409,10 +481,12 @@ void simulation::DH_LJF(int atom1, int atom4, float SCNBF, float LJA, float LJB)
     }
 
 
-
-
-
 }
+
+
+
+
+
 
 
 void simulation::DHrotTheta_from_dot(std::vector<float>& disp1, std::vector<float>& disp2, float& mag_disp1, float& mag_disp2, float& theta){
@@ -423,20 +497,6 @@ void simulation::DHrotTheta_from_dot(std::vector<float>& disp1, std::vector<floa
     theta = acos(cosine_value);
 
 
-}
-void simulation::vect_add(std::vector<float>& v1, std::vector<float>& v2, std::vector<float>& product){
-
-    for(int i = 0; i < v1.size(); i++){
-        product[i] = v1[i] + v2[i]; 
-    }
-
-}
-
-
-void simulation::resize(std::vector<float>& vect, float scale){
-    for(int i = 0; i < vect.size(); i++){
-        vect[i] *= scale;
-    }
 }
 
 
@@ -453,8 +513,8 @@ void simulation::DHtheta_from_dot(std::vector<float>& nplane1, std::vector<float
 
 void simulation::theta_from_dot(int& atom1, int& atom2, int& atom3, float& theta){
     std::vector<float> disp1, disp2;
-    displacement_vect(disp1, atom1, atom2);
-    displacement_vect(disp2, atom3, atom2);
+    displacement_vect(disp1, coord->Acoords,atom1, atom2);
+    displacement_vect(disp2, coord->Acoords, atom3, atom2);
     float magba;
     magnitude(disp1, magba);
     float magbc;
@@ -469,50 +529,11 @@ void simulation::theta_from_dot(int& atom1, int& atom2, int& atom3, float& theta
 }
 
 
-void simulation::cross(std::vector<float>& vect1, std::vector<float>& vect2, std::vector<float>& cprod){
-
-    cprod.push_back(vect1[1] * vect2[2] - vect1[2] * vect2[1]);
-    cprod.push_back(-(vect1[0] * vect2[2] - vect1[2] * vect2[0]));
-    cprod.push_back(vect1[0] * vect2[1] - vect1[1] * vect2[0]);
-
-}
-
-void simulation::dot(std::vector<float>& disp1, std::vector<float>& disp2, float& val){
-    for(int i = 0; i < 3; i++){
-        val += disp1[i] * disp2[i];
-    }
-}
-
-
-
-void simulation::unit_vector(float& mag, std::vector<float> d, std::vector<float>& unitv){
-    
-    for(int i = 0; i < d.size(); i++){
-        unitv.push_back(d[i]/mag);
-    }
-}
-
-void simulation::magnitude(std::vector<float>& object, float& mag){
-    float temp = 0;
-    for(int i = 0; i < object.size(); i++){
-        temp+= object[i] *object[i];
-    }
-    temp = std::sqrt(temp);
-    mag = temp;
-}
-
-
-void simulation::displacement_vect(std::vector<float>& d, int atom1, int atom2){
-    for(int i = 0; i < 3; i++){
-        d.push_back(coord->Acoords[atom1 * 3 + i] - coord->Acoords[atom2 * 3 + i]);
-
-    }
-}
 
 void simulation::VerletAlg(float& step_size, std::vector<T>& BWoutH, std::vector<T>& BIH, std::vector<T>& BForceC, std::vector<T>& BEQV, std::vector<T>& AWoutH,
  std::vector<T>& AIH,std::vector<T>& AForceC, std::vector<T>& AEQV, std::vector<T>& DincH, std::vector<T>& DWoutH, std::vector<T>& DForceC, 
  std::vector<T>& DPeriod , std::vector<T>& DPhase, std::vector<T>& SCEE_SF, std::vector<T>& SCNB_SF, std::vector<T>& LJAC, std::vector<T>& LJBC,std::vector<T>& ATI,
-  std::vector<T>& NBPIndex){
+  std::vector<T>& NBPIndex, std::vector<std::vector<int> >& excluded){
     std::unordered_map<std::string, std::vector<T> >::iterator ms = top->values.find("MASS");
         std::vector<T>& Mass = ms->second;
 for(int atom = 0; atom < velocities.size(); atom++){
@@ -525,9 +546,9 @@ forces.assign(forces.size(), 0);
 force_additions(BWoutH,  BIH,  BForceC, BEQV,  AWoutH,
   AIH, AForceC, AEQV,  DincH,  DWoutH,  DForceC, 
  DPeriod ,  DPhase,  SCEE_SF,  SCNB_SF, LJAC,  LJBC, ATI,
- NBPIndex);
+ NBPIndex, excluded);
 for(int atom = 0; atom < velocities.size(); atom++){
-   velocities[atom] = velocities[atom] + forces[atom]*step_size / (2 * std::get<float>(Mass[atom/(int)3]) );
+   velocities[atom] = velocities[atom] + forces[atom]*step_size / (2 * std::get<float>(Mass[atom/(int)3]));
    
 }
 
