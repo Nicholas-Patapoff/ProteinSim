@@ -14,7 +14,7 @@ parm data("chig_ext.parm7");
 
 simulation small_probe(coords, data, 1, "chig");
 
-small_probe.update_coord(0.001, 10, 5);
+small_probe.update_coord(0.00001, 20000, 5);
 
 
 

@@ -96,6 +96,7 @@ void simulation::update_coord(float step_size, int frames, int export_step){
 
     std::vector<std::vector<int> > excluded;
     int count = 0;
+    
     for(int i = 0; i < NEA.size(); i++){
         std::vector<int> temp;
 
@@ -106,7 +107,6 @@ void simulation::update_coord(float step_size, int frames, int export_step){
         count += std::get<int> (NEA[i]);
         excluded.push_back(temp);
     }
-
 
 
 for(int i = 0; i <= frames; i++){
@@ -134,19 +134,19 @@ void simulation::force_additions(std::vector<T>& BWoutH, std::vector<T>& BIH, st
   std::vector<T>& NBPIndex, std::vector<std::vector<int> >& excluded){ //all forces on protien for bond/FF interactions
 
 
-
     //bond forces
+    
     for(int i = 0; i < BWoutH.size() - 1; i+=3){ //BWoutH.size()
         spring_force( std::get<int>(BWoutH[i]) / 3,std::get<int>(BWoutH[i + 1]) / 3, std::get<float>(BForceC[std::get<int>(BWoutH[i + 2]) - 1]), std::get<float>(BEQV[std::get<int>(BWoutH[i + 2]) - 1]) );
     
     }
+    
     for(int i = 0; i < BIH.size(); i+=3){ // this is a bond which include hydrogen. I want to stiffen interaction so as to reduce computational complexity. I can set up a method for selecting a model and integrate it into there
         spring_force( std::get<int>(BIH[i]) / 3,std::get<int>(BIH[i + 1]) / 3, std::get<float>(BForceC[std::get<int>(BIH[i + 2]) - 1]), std::get<float>(BEQV[std::get<int>(BIH[i + 2]) - 1]) );
     }
 
 
     //angle forces
-    
     for(int i = 0; i < AWoutH.size(); i+=4){
         angle_force( std::get<int>(AWoutH[i]) / 3,std::get<int>(AWoutH[i + 1]) / 3, std::get<int>(AWoutH[i + 2]) / 3, std::get<float>(AForceC[std::get<int>(AWoutH[i + 3]) - 1]), std::get<float>(AEQV[std::get<int>(AWoutH[i + 3]) - 1]));
 
@@ -159,8 +159,6 @@ void simulation::force_additions(std::vector<T>& BWoutH, std::vector<T>& BIH, st
 
     //Dihedral forces
     
-
-
     for(int i = 0; i < DWoutH.size(); i+=5){
         dihedral_force( std::get<int>(DWoutH[i]) / 3, std::get<int>(DWoutH[i + 1]) / 3, (std::get<int>(DWoutH[i + 2]) / 3), (std::get<int>(DWoutH[i + 3]) / 3), std::get<float>(DForceC[std::get<int>(DWoutH[i + 4]) - 1]), 
         std::get<float>(DPeriod[std::get<int>(DWoutH[i + 4]) - 1]), std::get<float>(SCEE_SF[std::get<int>(DWoutH[i + 4]) - 1]), std::get<float>(SCNB_SF[std::get<int>(DWoutH[i + 4]) - 1]), std::get<float>(DPhase[std::get<int>(DWoutH[i + 4]) - 1]));
@@ -175,11 +173,9 @@ void simulation::force_additions(std::vector<T>& BWoutH, std::vector<T>& BIH, st
             LJB = std::get<int>(ATI[abs(atom4)]);
 
             temp = std::get<int>(NBPIndex[sqrt(NBPIndex.size()) * (LJA - 1) + LJB]);
-            //std::cout << temp << std::endl;
+
             LJB = std::get<float>(LJBC[temp - 1]);
             LJA = std::get<float>(LJAC[temp - 1]);
-
-
             DH_LJF(atom1, abs(atom4), std::get<float>(SCNB_SF[std::get<int>(DWoutH[i + 4]) - 1]), LJA, LJB);
         }
         
@@ -238,20 +234,9 @@ void simulation::force_additions(std::vector<T>& BWoutH, std::vector<T>& BIH, st
             LennardJ_force(i, y, A, B);
             }
 
-             
-            
-            
-            
-            
-            //1. import excluded_atoms_list
-            //2. import number_excluded_atoms
-            //3. atom excluded_atoms_list = i * 2; 
-            //4. 
-            
+
         }
     }
-    //for atom1 and atom2 given, if the found non-bonded_parm_index is positive -> assign LJA and LJB and find LJ force
-    // else index is negative, assign HBA and HBB, find the Hydrogen bond for
 
     }
 }
@@ -386,8 +371,6 @@ vect_add(tc, baXFa, tc);
 resize(tc, -1);
 
 
-
-
 float ocmag;
 magnitude(dispoc, ocmag);
 ocmag = 1/(ocmag * ocmag);
@@ -399,7 +382,6 @@ vect_add(Fa, Fd, tb);
 vect_add(tb, Fc, tb);
 
 resize(tb, -1);
-
 
 
 //SUM OF TORQUES
@@ -430,7 +412,6 @@ float total = 0;
 for(int i = 0; i < 3; i++){
 total += torqoa[i] + torqob[i] + torqoc[i] + torqod[i];
 }
-//std::cout << total << std::endl;
 //SUM OF TROQUES
 
 
@@ -440,8 +421,8 @@ if(ab_theta){
         forces[atom2 * 3 + i] += tb[i];
         forces[abs(atom3) * 3 + i] += Fc[i];
         forces[abs(atom4) * 3 + i] += Fd[i];
+        }
     }
-}
 }
 
 void simulation::LennardJ_force(int atom1,int atom2, float LJA, float LJB){
@@ -459,8 +440,8 @@ std::vector<float> dispad, normad;
         printf("%f\n", Fa);
     }
 for(int i = 0; i < 3; i++){
-        forces[atom1 * 3 + i] -= Fa * normad[i];
-        forces[atom2 * 3 + i] += Fa * normad[i];
+        forces[atom1 * 3 + i] -= 0.5 * Fa * normad[i];
+        forces[atom2 * 3 + i] += 0.5 * Fa * normad[i];
     }
 
 }
@@ -480,8 +461,8 @@ void simulation::DH_LJF(int atom1, int atom4, float SCNBF, float LJA, float LJB)
 
     if(SCNBF != 0){
         for(int i = 0; i < 3; i++){
-        forces[atom1 * 3 + i] -= Fa * normad[i];
-        forces[atom4 * 3 + i] += Fa * normad[i];
+        forces[atom1 * 3 + i] -= 0.5 *Fa * normad[i];
+        forces[atom4 * 3 + i] += 0.5 *Fa * normad[i];
     }
     }
 
