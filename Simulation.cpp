@@ -318,34 +318,56 @@ void simulation::dihedral_force(int atom1, int atom2, int atom3, int atom4, doub
 //steps to find forces on end atoms: 1.create unit vectors whose direction is orthogonal abc and bcd 2. find the angle between the planes 
 //3. calculate the forces for atoms a and d usign (0.5/mag(ab)sin(theta)) * (1A1sin(theta) - 2A2sin(2theta) + 3A3(sin(theta)) * norm vector orth to plane. 
 
-//1.
+//1. finding DIH angle without cross products where theta = arccose(Rnorm dot Snorm)
 std::vector<double> dispba, dispbc, dispcb, dispcd;
 displacement_vect(dispba,coord->Acoords, atom1, atom2);
 displacement_vect(dispbc,coord->Acoords, abs(atom3), atom2);
 displacement_vect(dispcb,coord->Acoords, atom2, abs(atom3));
 displacement_vect(dispcd,coord->Acoords, abs(atom4), abs(atom3));
 
-std::vector<double> orthaabc, orthabcd;
+double magba, magbc, magcd, baDOTbc = 0, cdDOTbc = 0, magorthabc, magorthbcd;
+magnitude(dispbc, magbc);
+magnitude(dispba, magba);
+magnitude(dispcd, magcd);
+
+std::vector<double> R, Rnorm, dispbcnorm, S, Snorm; // (r(ij) - (r(ij) dot r(kj)))
+unit_vector(magbc, dispbc, dispbcnorm);
+dot(dispba, dispbcnorm, baDOTbc);
+dot(dispbc, dispcd, cdDOTbc);
+
+for(int i = 0; i < 3; i++){
+    R.push_back(dispba[i] - (baDOTbc * dispbcnorm[i]));
+    S.push_back(dispcd[i] - (cdDOTbc * dispbcnorm[i]));
+}
+
+double magS, magR; 
+magnitude(S, magS);
+magnitude(R, magR);
+
+unit_vector(magS, S, Snorm);
+unit_vector(magR, R, Rnorm);
+
+
+double Rnorm_DOT_Snorm = 0, DH_theta;
+dot(Snorm, Rnorm, Rnorm_DOT_Snorm);
+
+DH_theta = acosf64(Rnorm_DOT_Snorm);
+
+
+double ab_theta, cd_theta;
+DHrotTheta_from_dot(dispba, dispcb, magba, magbc, ab_theta);
+DHrotTheta_from_dot(dispbc, dispcd, magbc, magcd, cd_theta);
+
+
+std::vector<double> orthaabc,orthabcd;
 cross(dispba, dispbc, orthaabc);
 cross(dispcd, dispcb, orthabcd);
-
-double magba, magbc, magcb, magcd, magorthabc, magorthbcd;
-magnitude(dispba, magba);
-magnitude(dispbc, magbc);
-magnitude(dispcb, magcb);
-magnitude(dispcd, magcd);
 magnitude(orthaabc, magorthabc);
 magnitude(orthabcd, magorthbcd);
 
 std::vector<double> northabc, northbcd, Fa, Fd;
 unit_vector(magorthabc, orthaabc, northabc);
 unit_vector(magorthbcd, orthabcd, northbcd);
-
-double ab_theta, cd_theta, DH_theta;
-DHrotTheta_from_dot(dispba, dispcb, magba, magbc, ab_theta);
-DHrotTheta_from_dot(dispbc, dispcd, magbc, magcd, cd_theta);
-
-DHtheta_from_dot(northabc, northbcd, magorthabc, magorthbcd, DH_theta);
 
 for(int i = 0; i < 3; i++){
 
