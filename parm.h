@@ -11,7 +11,7 @@ class parm{
 private:
 
 public: 
-using T = std::variant<int, float, std::string>;
+using T = std::variant<int, double, std::string>;
 std::unordered_map<std::string, std::vector<T> > values;
 parm(std::string pdb);
 };

@@ -24,6 +24,8 @@ Environment::Environment(std::string pdb){
                 //std::cout << "hetatm!" << std::endl;
             }
         }
+    } else{
+        printf("did not open\n");
     }
     
     
@@ -42,9 +44,9 @@ void Environment::append_Hresidue(std::string a){
     Hresidue.push_back(a);
 }
 void Environment::append_coords(std::string a, std::string b, std::string c){
-    float x = std::stof(a);
-    float y = std::stof(b);
-    float z = std::stof(c);
+    double x = std::stof(a);
+    double y = std::stof(b);
+    double z = std::stof(c);
     //std::cout << x << " " << y << " " << z << std::endl;
     Acoords.push_back(x);
     Acoords.push_back(y);
@@ -52,9 +54,9 @@ void Environment::append_coords(std::string a, std::string b, std::string c){
 }
 
 void Environment::append_Hcoords(std::string a, std::string b, std::string c){
-    float x = std::stof(a);
-    float y = std::stof(b);
-    float z = std::stof(c);
+    double x = std::stof(a);
+    double y = std::stof(b);
+    double z = std::stof(c);
     Hcoords.push_back(x);
     Hcoords.push_back(y);
     Hcoords.push_back(z);
