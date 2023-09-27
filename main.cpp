@@ -9,10 +9,10 @@
 int main()
 {
 
-Environment coords("test_prot_ext.pdb");
-parm data("test_prot.parm7"); 
+Environment coords("chignolin_ext.pdb");
+parm data("chig_ext.parm7"); 
 
-simulation small_probe(coords, data, 1, "test_prot");
+simulation small_probe(coords, data, 1, "chig");
 
 small_probe.update_coord(0.01, 20000, 5);
 

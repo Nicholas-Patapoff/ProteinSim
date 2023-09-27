@@ -43,6 +43,7 @@ void VerletAlg(double& step, std::vector<T>& BWoutH, std::vector<T>& BIH, std::v
 void angle_force(int atom1, int atom2, int atom3, double k, double eq);
 void dihedral_force(int atom1, int atom2, int atom3, int atom4, double k, double period, double sceef, double scnbf, double phase);
 void LennardJ_force(int atom1, int atom2, double LJA, double LJB);
+void improper_dih_force(int atom1, int atom2, int atom3, int atom4, double k, double period, double sceef, double scnbf, double phase);
 };
 
 

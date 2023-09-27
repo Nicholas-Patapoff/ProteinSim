@@ -162,10 +162,14 @@ void simulation::force_additions(std::vector<T>& BWoutH, std::vector<T>& BIH, st
     
     
     for(int i = 0; i < DWoutH.size(); i+=5){
-        dihedral_force( std::get<int>(DWoutH[i]) / 3, std::get<int>(DWoutH[i + 1]) / 3, (std::get<int>(DWoutH[i + 2]) / 3), (std::get<int>(DWoutH[i + 3]) / 3), std::get<double>(DForceC[std::get<int>(DWoutH[i + 4]) - 1]), 
-        std::get<double>(DPeriod[std::get<int>(DWoutH[i + 4]) - 1]), std::get<double>(SCEE_SF[std::get<int>(DWoutH[i + 4]) - 1]), std::get<double>(SCNB_SF[std::get<int>(DWoutH[i + 4]) - 1]), std::get<double>(DPhase[std::get<int>(DWoutH[i + 4]) - 1]));
-        
         if((std::get<int>(DWoutH[i + 2]) / 3) >= 0){
+            dihedral_force( std::get<int>(DWoutH[i]) / 3, std::get<int>(DWoutH[i + 1]) / 3,
+             (std::get<int>(DWoutH[i + 2]) / 3), (std::get<int>(DWoutH[i + 3]) / 3), 
+            std::get<double>(DForceC[std::get<int>(DWoutH[i + 4]) - 1]), 
+            std::get<double>(DPeriod[std::get<int>(DWoutH[i + 4]) - 1]), 
+            std::get<double>(SCEE_SF[std::get<int>(DWoutH[i + 4]) - 1]), 
+            std::get<double>(SCNB_SF[std::get<int>(DWoutH[i + 4]) - 1]), 
+            std::get<double>(DPhase[std::get<int>(DWoutH[i + 4]) - 1]));
             double LJA, LJB;
             int atom1, atom4;
             atom1 = std::get<int>(DWoutH[i]) / 3;
@@ -179,17 +183,32 @@ void simulation::force_additions(std::vector<T>& BWoutH, std::vector<T>& BIH, st
             LJB = std::get<double>(LJBC[temp]);
             LJA = std::get<double>(LJAC[temp]);
             DH_LJF(atom1, abs(atom4), std::get<double>(SCNB_SF[std::get<int>(DWoutH[i + 4]) - 1]), LJA, LJB);
+        } else if((std::get<int>(DWoutH[i + 3]) / 3) < 0){
+            improper_dih_force(std::get<int>(DWoutH[i]) / 3, std::get<int>(DWoutH[i + 1]) / 3,
+             (std::get<int>(DWoutH[i + 2]) / 3), (std::get<int>(DWoutH[i + 3]) / 3), 
+            std::get<double>(DForceC[std::get<int>(DWoutH[i + 4]) - 1]), 
+            std::get<double>(DPeriod[std::get<int>(DWoutH[i + 4]) - 1]), 
+            std::get<double>(SCEE_SF[std::get<int>(DWoutH[i + 4]) - 1]), 
+            std::get<double>(SCNB_SF[std::get<int>(DWoutH[i + 4]) - 1]), 
+            std::get<double>(DPhase[std::get<int>(DWoutH[i + 4]) - 1]));
         }
-     }    
-        
+
+
+    }    
 
    
     for(int i = 0; i < DincH.size(); i+=5){
 
-        dihedral_force( std::get<int>(DincH[i]) / 3,std::get<int>(DincH[i + 1]) / 3, (std::get<int>(DincH[i + 2]) / 3), (std::get<int>(DincH[i + 3]) / 3), std::get<double>(DForceC[std::get<int>(DincH[i + 4]) - 1]), 
-        std::get<double>(DPeriod[std::get<int>(DincH[i + 4]) - 1]), std::get<double>(SCEE_SF[std::get<int>(DincH[i + 4]) - 1]), std::get<double>(SCNB_SF[std::get<int>(DincH[i + 4]) - 1]), std::get<double>(DPhase[std::get<int>(DincH[i + 4]) - 1]));
         
         if((std::get<int>(DincH[i + 2]) / 3) >= 0){
+            dihedral_force( std::get<int>(DincH[i]) / 3,std::get<int>(DincH[i + 1]) / 3, 
+            (std::get<int>(DincH[i + 2]) / 3), (std::get<int>(DincH[i + 3]) / 3), 
+            std::get<double>(DForceC[std::get<int>(DincH[i + 4]) - 1]), 
+        std::get<double>(DPeriod[std::get<int>(DincH[i + 4]) - 1]), 
+        std::get<double>(SCEE_SF[std::get<int>(DincH[i + 4]) - 1]), 
+        std::get<double>(SCNB_SF[std::get<int>(DincH[i + 4]) - 1]), 
+        std::get<double>(DPhase[std::get<int>(DincH[i + 4]) - 1]));
+        
             double LJA, LJB;
             int atom1, atom4;
             atom1 = abs(std::get<int>(DincH[i]) / 3);
@@ -207,12 +226,22 @@ void simulation::force_additions(std::vector<T>& BWoutH, std::vector<T>& BIH, st
 
 
             
-
+ 
             DH_LJF(atom1, abs(atom4), std::get<double>(SCNB_SF[std::get<int>(DincH[i + 4]) - 1]), LJA, LJB);
+        } else if((std::get<int>(DincH[i + 3]) / 3) < 0){
+            improper_dih_force(std::get<int>(DincH[i]) / 3,std::get<int>(DincH[i + 1]) / 3, 
+            (std::get<int>(DincH[i + 2]) / 3), (std::get<int>(DincH[i + 3]) / 3), 
+            std::get<double>(DForceC[std::get<int>(DincH[i + 4]) - 1]), 
+        std::get<double>(DPeriod[std::get<int>(DincH[i + 4]) - 1]), 
+        std::get<double>(SCEE_SF[std::get<int>(DincH[i + 4]) - 1]), 
+        std::get<double>(SCNB_SF[std::get<int>(DincH[i + 4]) - 1]), 
+        std::get<double>(DPhase[std::get<int>(DincH[i + 4]) - 1]));
         }
     }
     
     //LJ/hbond forces
+    /*
+    
     for(int i = 0; i < ATI.size() - 1; i++){
         for(int y = i + 1; y < ATI.size(); y++){
             int check = 0;
@@ -241,7 +270,7 @@ void simulation::force_additions(std::vector<T>& BWoutH, std::vector<T>& BIH, st
 
         }
     }
-    
+    */
     
 
     
@@ -308,7 +337,63 @@ void simulation::angle_force(int atom1, int atom2, int atom3, double k, double e
         
     }    
 
-}   
+}
+
+void simulation::improper_dih_force(int atom1, int atom2, int atom3, int atom4, double k,double period, double sceef, double scnbf, double phase){
+std::vector<double> dispba, dispbc, dispcd;
+atom4 = abs(atom4);
+displacement_vect(dispba,coord->Acoords, abs(atom3), atom1);
+displacement_vect(dispbc,coord->Acoords, abs(atom3), atom2);
+displacement_vect(dispcd,coord->Acoords, abs(atom3), atom4);
+
+double magba, magbc, magcd, baDOTbc = 0, cdDOTbc = 0, magorthacb, magorthbcd, magorthdca;
+magnitude(dispbc, magbc);
+magnitude(dispba, magba);
+magnitude(dispcd, magcd);
+
+std::vector<double> orthaacb,orthabcd, orthadca;
+cross(dispba, dispbc, orthaacb);
+cross(dispbc, dispcd, orthabcd);
+cross(dispcd, dispba, orthadca);
+magnitude(orthaacb, magorthacb);
+magnitude(orthabcd, magorthbcd);
+magnitude(orthadca, magorthdca);
+
+std::vector<double> Northaacb,Northabcd, Northadca;
+unit_vector(magorthacb, orthaacb, Northaacb);
+unit_vector(magorthbcd, orthabcd, Northabcd);
+unit_vector(magorthdca, orthadca, Northadca);
+
+double dot1 = 0, dot2 = 0, dot3 = 0;
+dot(dispcd, Northaacb, dot1);
+dot(dispba, Northabcd, dot2);
+dot(dispbc, Northadca, dot3);
+
+double theta1, theta2, theta3;
+theta1 = acosf64(dot1/magcd);
+theta2 = acosf64(dot2/magba);
+theta3 = acosf64(dot3/magbc);
+
+std::vector<double> Fa, Fb, Fc, Fd;
+for(int i = 0; i < 3; i++){ //0.5 * period * k * sin(period*DH_theta + phase)
+    Fa.push_back(0.5 * period * k * sin(period* (theta1 - 1.5708) + phase) * Northaacb[i]);
+    Fb.push_back(0.5 * period * k * sin(period* (theta2 - 1.5708) + phase) * Northabcd[i]);
+    Fd.push_back(0.5 * period * k * sin(period* (theta3 - 1.5708) + phase) * Northadca[i]);
+    Fc.push_back(-Fa[i] - Fb[i] - Fd[i]);
+
+}
+
+    for(int i = 0; i < 3; i++){
+        forces[atom1 * 3 + i] += Fa[i];
+        forces[atom2 * 3 + i] += Fb[i];
+        forces[abs(atom3) * 3 + i] += Fc[i];
+        forces[abs(atom4) * 3 + i] += Fd[i];
+        }
+
+
+
+
+}
 
 void simulation::dihedral_force(int atom1, int atom2, int atom3, int atom4, double k, double period, double sceef, double scnbf, double phase){
 //torsion potential is defined as U= 0.5[A1(1 + cos(theta)) + A2(1 - cos2theta)) + A3(1 + cost(3theta)) + A4]
