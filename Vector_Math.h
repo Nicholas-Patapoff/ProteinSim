@@ -14,5 +14,4 @@ void cross(std::vector<double>& vect1, std::vector<double>& vect2, std::vector<d
 
 
 
-
 #endif

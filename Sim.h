@@ -9,6 +9,10 @@
 #include <memory>
 #include "Env.h"
 #include "parm.h"
+#include <eigen3/Eigen/Dense>
+
+
+
 
 class simulation{
 private:
@@ -21,7 +25,10 @@ void theta_from_dot(int& atom1, int& atom2, int& atom3, double& theta);
 void DHtheta_from_dot(std::vector<double>& nplane1, std::vector<double>& nplane2, double np1mag, double np2mag, double& theta);
 void DHrotTheta_from_dot(std::vector<double>& disp1, std::vector<double>& disp2, double& mag_disp1, double& mag_disp2, double& theta);
 void DH_LJF(int atom1, int atom4, double SCNBF, double LJA, double LJB);
-
+void find_excluded(int atoms, std::vector<std::vector<int> >& excluded, std::vector<T>& NEA, std::vector<T>& EAL);
+void center_of_mass(std::vector<T>& Mass,std::vector<double>& Acoords,std::vector<double>& center_of_mass);
+void farthest_from_center(std::vector<double>& Acoords, std::vector<double> COM, double& max_dist);
+std::vector<Eigen::Vector3d> generateFaceVectors(double inradius);
 public:
 std::vector<double> velocities;
 std::vector<double> forces;
@@ -44,6 +51,7 @@ void angle_force(int atom1, int atom2, int atom3, double k, double eq);
 void dihedral_force(int atom1, int atom2, int atom3, int atom4, double k, double period, double sceef, double scnbf, double phase);
 void LennardJ_force(int atom1, int atom2, double LJA, double LJB);
 void improper_dih_force(int atom1, int atom2, int atom3, int atom4, double k, double period, double sceef, double scnbf, double phase);
+
 };
 
 

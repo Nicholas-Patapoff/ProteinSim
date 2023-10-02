@@ -9,6 +9,9 @@
 #include <math.h>
 #include <thread>
 #include <iomanip>
+#include <libgen.h>
+#include <eigen3/Eigen/Dense>
+
 
 simulation::simulation(Environment& temp1, parm& temp2, double step, std::string export_name){
 
@@ -18,7 +21,7 @@ simulation::simulation(Environment& temp1, parm& temp2, double step, std::string
 
     velocities = std::vector<double>(coord->Acoords.size(), 0);
     forces = std::vector<double>(coord->Acoords.size(), 0);
-    
+
 
     temp_file.open("/home/nich/Documents/GitHub/coord_vis/" + export_name +".crd", std::ios::out);
     temp_file << std::endl;
@@ -26,6 +29,11 @@ simulation::simulation(Environment& temp1, parm& temp2, double step, std::string
 
 
 void simulation::update_coord(double step_size, int frames, int export_step){
+    //initialize atom properties
+    std::unordered_map<std::string, std::vector<T> >::iterator ms = top->values.find("MASS");
+        std::vector<T>& Mass = ms->second;
+
+    
     //initialize bond force constants 
     std::unordered_map<std::string, std::vector<T> >::iterator bwh = top->values.find("BONDS_WITHOUT_HYDROGEN");
         std::vector<T>& BWoutH = bwh->second;
@@ -94,22 +102,47 @@ void simulation::update_coord(double step_size, int frames, int export_step){
     std::unordered_map<std::string, std::vector<T> >::iterator eal = top->values.find("EXCLUDED_ATOMS_LIST");
         std::vector<T>& EAL = eal->second;
 
+    // init atomic force exclusions list
     std::vector<std::vector<int> > excluded;
-    int count = 0;
+    find_excluded(NEA.size(), excluded, NEA, EAL);
+
+
+    //INIT BOX PARAMETERS
+
+    std::vector<double> COM;
+    //find center of mass
+    center_of_mass(Mass, coord->Acoords, COM);
     
-    for(int i = 0; i < NEA.size(); i++){
-        std::vector<int> temp;
+    //measure atomic distances from center
+    //farthest is found and R become atom + 15 anstrums 
+    double insphereR, seg_length;
+    farthest_from_center(coord->Acoords, COM, insphereR);
+    insphereR += 15; //check units to assure that untis are in Angstroms
+    seg_length = 2 * insphereR /(sqrtf64(3 * (5 + sqrt(5))));
 
-        for(int y = count; y < count + std::get<int> (NEA[i]); y++){
-            temp.push_back(std::get<int>(EAL[y]));
+    //generate face vectors 
+    
 
+
+    //INIT BOX PARAMETERS
+    int reorder_atoms_freq;
+
+    if(step_size >= 0.01){
+        reorder_atoms_freq = 5;
+    } else if (step_size < 0.01 && step_size >= 0.001){
+        reorder_atoms_freq = 25;
+    } else if(step_size < 0.001){
+        reorder_atoms_freq = 50;
     }
-        count += std::get<int> (NEA[i]);
-        excluded.push_back(temp);
-    }
 
+    //set up box, and vectors to fit within it 
+    std::vector<std::vector<double> > boxed_atoms;
 
 for(int i = 0; i <= frames; i++){
+    //refresh atoms in box vectors every reorder_atoms_freq
+    if(i % reorder_atoms_freq == 0 ){
+        reorder_atoms_freq;
+    }
         VerletAlg(step_size,  BWoutH,  BIH,  BForceC, BEQV,  AWoutH,
   AIH, AForceC, AEQV,  DincH,  DWoutH,  DForceC, 
  DPeriod ,  DPhase,  SCEE_SF,  SCNB_SF, LJAC,  LJBC, ATI,
@@ -126,6 +159,81 @@ for(int i = 0; i <= frames; i++){
 
 
     
+}
+
+
+std::vector<Eigen::Vector3d> simulation::generateFaceVectors(double inradius) {
+    // Define a vector to store the face vectors
+    std::vector<Eigen::Vector3d> faceVectors;
+
+    //define dih_angle and rotation angle
+    double dih_angle = acosf64(-1.0/ sqrtf64(5)); 
+    double rot_angle = M_PI_2f64 * 2/5; //72 deg
+
+    Eigen::Vector3d startingFaceVector(0, 0, inradius);
+    faceVectors.push_back(startingFaceVector);
+
+    return faceVectors;
+}
+
+
+void simulation::center_of_mass(std::vector<T>& Mass,std::vector<double>& Acoords,std::vector<double>& center_of_mass ){
+std::vector<double> added_coordsxmass, added_masses;
+    added_coordsxmass = std::vector<double>(3, 0);
+    added_masses.push_back(0);
+    for(int i = 0; i < Acoords.size(); i += 3){
+        added_coordsxmass[0] += Acoords[i] * std::get<double>(Mass[i/3]);
+        added_coordsxmass[1] += Acoords[i + 1] * std::get<double>(Mass[i/3]);
+        added_coordsxmass[2] += Acoords[i + 2] * std::get<double>(Mass[i/3]);
+        added_masses[0] += std::get<double>(Mass[i/3]);
+    }
+
+
+
+    center_of_mass = std::vector<double>(3,0);
+    center_of_mass[0] = added_coordsxmass[0]/added_masses[0];
+    center_of_mass[1] = added_coordsxmass[1]/added_masses[0];
+    center_of_mass[2] = added_coordsxmass[2]/added_masses[0];
+}
+
+void simulation::farthest_from_center(std::vector<double>& Acoords, std::vector<double> COM, double& max_dist){
+std::vector<double> atom = std::vector<double>(3,0), current_disp;
+            atom[0] = Acoords[0];
+            atom[1] = Acoords[1];
+            atom[2] = Acoords[2];
+            for(int i = 0; i < 3; i++){
+                current_disp.push_back(atom[i] - COM[i]);
+            }
+            magnitude(current_disp, max_dist);
+    for(int i = 0; i < Acoords.size(); i += 3){
+        double current;
+            atom[0] = Acoords[i];
+            atom[1] = Acoords[i + 1];
+            atom[2] = Acoords[i + 2];
+            for(int i = 0; i < 3; i++){
+                current_disp.push_back(atom[i] - COM[i]);
+            }
+            magnitude(current_disp, current);
+            if(current > max_dist){
+                max_dist = current;
+            }
+    }
+
+}
+
+void simulation::find_excluded(int atoms, std::vector<std::vector<int> >& excluded, std::vector<T>& NEA, std::vector<T>& EAL){
+        int count = 0;
+    
+    for(int i = 0; i < NEA.size(); i++){
+        std::vector<int> temp;
+
+        for(int y = count; y < count + std::get<int> (NEA[i]); y++){
+            temp.push_back(std::get<int>(EAL[y]));
+
+    }
+        count += std::get<int> (NEA[i]);
+        excluded.push_back(temp);
+    }
 }
 
 void simulation::force_additions(std::vector<T>& BWoutH, std::vector<T>& BIH, std::vector<T>& BForceC, std::vector<T>& BEQV, std::vector<T>& AWoutH,
@@ -240,7 +348,7 @@ void simulation::force_additions(std::vector<T>& BWoutH, std::vector<T>& BIH, st
     }
     
     //LJ/hbond forces
-    /*
+    
     
     for(int i = 0; i < ATI.size() - 1; i++){
         for(int y = i + 1; y < ATI.size(); y++){
@@ -270,7 +378,7 @@ void simulation::force_additions(std::vector<T>& BWoutH, std::vector<T>& BIH, st
 
         }
     }
-    */
+    
     
 
     
