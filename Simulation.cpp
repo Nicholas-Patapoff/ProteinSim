@@ -96,19 +96,22 @@ void simulation::update_coord(double step_size, int frames, int export_step){
     std::unordered_map<std::string, std::vector<T> >::iterator nbpi = top->values.find("NONBONDED_PARM_INDEX");
         std::vector<T>& NBPIndex = nbpi->second;
   
-    //import excluded atoms 
+
+    //IMPORT EXCLUDED ATOMS 
     std::unordered_map<std::string, std::vector<T> >::iterator nea = top->values.find("NUMBER_EXCLUDED_ATOMS");
         std::vector<T>& NEA = nea->second;
     std::unordered_map<std::string, std::vector<T> >::iterator eal = top->values.find("EXCLUDED_ATOMS_LIST");
         std::vector<T>& EAL = eal->second;
+    //IMPORT EXCLUDED ATOMS
 
-    // init atomic force exclusions list
+
+    // INIT EXCLUSION LIST
     std::vector<std::vector<int> > excluded;
     find_excluded(NEA.size(), excluded, NEA, EAL);
+    // INIT EXCLUSION LIST
 
 
     //INIT BOX PARAMETERS
-
     std::vector<double> COM;
     //find center of mass
     center_of_mass(Mass, coord->Acoords, COM);
@@ -121,10 +124,17 @@ void simulation::update_coord(double step_size, int frames, int export_step){
     seg_length = 2 * insphereR /(sqrtf64(3 * (5 + sqrt(5))));
 
     //generate face vectors 
+
+    std::vector<Eigen::Vector3d> dodeca_faces = generateFaceVectors(insphereR);
+    //INIT BOX PARAMETERS
+    
+    
+    //INIT BOXED VECTORS
+    //each vector will cover a 3d space and sort based on Z axis
     
 
 
-    //INIT BOX PARAMETERS
+    
     int reorder_atoms_freq;
 
     if(step_size >= 0.01){
@@ -135,8 +145,7 @@ void simulation::update_coord(double step_size, int frames, int export_step){
         reorder_atoms_freq = 50;
     }
 
-    //set up box, and vectors to fit within it 
-    std::vector<std::vector<double> > boxed_atoms;
+
 
 for(int i = 0; i <= frames; i++){
     //refresh atoms in box vectors every reorder_atoms_freq
@@ -172,6 +181,31 @@ std::vector<Eigen::Vector3d> simulation::generateFaceVectors(double inradius) {
 
     Eigen::Vector3d startingFaceVector(0, 0, inradius);
     faceVectors.push_back(startingFaceVector);
+
+        // Eigen's rotation matrices for rotations around the Z-axis and around an edge
+    Eigen::Matrix3d rotationZ;
+    rotationZ = Eigen::AngleAxisd(rot_angle, Eigen::Vector3d::UnitZ());
+
+    Eigen::Matrix3d rotationEdge;
+    rotationEdge = Eigen::AngleAxisd(dih_angle, Eigen::Vector3d::UnitX());
+
+        // Generate face vectors for the 5 surrounding faces (the belt around the dodecahedron)
+        for(int i = 0; i < 5; i++){
+            startingFaceVector = rotationZ * startingFaceVector;
+            faceVectors.push_back(startingFaceVector);
+        }
+    // generates top-most and bottom-most face vectors
+    faceVectors.push_back(rotationEdge * startingFaceVector);
+    faceVectors.push_back(rotationEdge.inverse() * startingFaceVector);
+
+
+    for (int i = 1; i <= 5; ++i) {
+        Eigen::Vector3d vector = faceVectors[i];
+        Eigen::Matrix3d rotationAroundFaceVector;
+        rotationAroundFaceVector = Eigen::AngleAxisd(dih_angle, Eigen::Vector3d::UnitZ().cross(vector));
+        faceVectors.push_back(rotationAroundFaceVector * vector);
+    }
+
 
     return faceVectors;
 }
