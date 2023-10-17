@@ -775,8 +775,6 @@ void simulation::VerletAlg(double& step_size, std::vector<T>& BWoutH, std::vecto
  std::vector<T>& AIH,std::vector<T>& AForceC, std::vector<T>& AEQV, std::vector<T>& DincH, std::vector<T>& DWoutH, std::vector<T>& DForceC, 
  std::vector<T>& DPeriod , std::vector<T>& DPhase, std::vector<T>& SCEE_SF, std::vector<T>& SCNB_SF, std::vector<T>& LJAC, std::vector<T>& LJBC,std::vector<T>& ATI,
   std::vector<T>& NBPIndex, std::vector<std::vector<int> >& excluded){
-
-
     std::unordered_map<std::string, std::vector<T> >::iterator ms = top->values.find("MASS");
         std::vector<T>& Mass = ms->second;
 
@@ -790,9 +788,12 @@ for(int atom = 0; atom < coord->Acoords.size(); atom++){
 forces.assign(forces.size(), 0);
 
 force_additions(BWoutH,  BIH,  BForceC, BEQV,  AWoutH,
-  AIH, AForceC, AEQV,  DincH,  DWoutH,  DForceC, 
+ AIH, AForceC, AEQV,  DincH,  DWoutH,  DForceC, 
  DPeriod ,  DPhase,  SCEE_SF,  SCNB_SF, LJAC,  LJBC, ATI,
  NBPIndex, excluded);
+
+
+
 for(int atom = 0; atom < velocities.size(); atom++){
    velocities[atom] = velocities[atom] + forces[atom]*step_size / (2 * std::get<double>(Mass[atom/3]));
 }
