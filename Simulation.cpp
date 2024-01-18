@@ -121,13 +121,19 @@ void simulation::update_coord(double step_size, int frames, int export_step){
     double insphereR, seg_length;
     farthest_from_center(coord->Acoords, COM, insphereR);
     insphereR += 15; //check units to assure that untis are in Angstroms
-    seg_length = 2 * insphereR /(sqrtf64(3 * (5 + sqrt(5))));
 
     //generate face vectors 
 
-    std::vector<Eigen::Vector3d> dodeca_faces = generateFaceVectors(insphereR);
+    std::vector<std::vector<int>> vec(insphereR * insphereR * insphereR);
+
+    //propagate atoms into vector 
+
+
+   
+    std::vector<Eigen::Vector3d> dodeca_faces = generateCubeFaceVectors(insphereR);
     //INIT BOX PARAMETERS
     
+    rehash(vec, insphereR);
     
     //INIT BOXED VECTORS
     //each vector will cover a 3d space and sort based on Z axis
@@ -171,7 +177,34 @@ for(int i = 0; i <= frames; i++){
 }
 
 
-std::vector<Eigen::Vector3d> simulation::generateFaceVectors(double inradius) {
+void rehash(std::vector<std::vector<int>>& vec, int insphereR, std::vector<int>&stuff ){
+
+
+}
+
+
+std::vector<Eigen::Vector3d> simulation::generateCubeFaceVectors(double inradius) {
+    // Define a vector to store the face vectors
+    std::vector<Eigen::Vector3d> faceVectors;
+
+    faceVectors.emplace_back(inradius, inradius, 0); 
+    faceVectors.emplace_back(inradius, inradius, 2 * inradius); 
+
+    faceVectors.emplace_back(inradius, 0, inradius); 
+    faceVectors.emplace_back(inradius, 2 * inradius, inradius); 
+
+    faceVectors.emplace_back(0, inradius, inradius); 
+    faceVectors.emplace_back(2 * inradius, inradius, inradius); 
+
+
+    
+
+    return faceVectors;
+}
+
+
+
+std::vector<Eigen::Vector3d> simulation::generateDodecaFaceVectors(double inradius) {
     // Define a vector to store the face vectors
     std::vector<Eigen::Vector3d> faceVectors;
 

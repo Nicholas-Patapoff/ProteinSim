@@ -28,7 +28,9 @@ void DH_LJF(int atom1, int atom4, double SCNBF, double LJA, double LJB);
 void find_excluded(int atoms, std::vector<std::vector<int> >& excluded, std::vector<T>& NEA, std::vector<T>& EAL);
 void center_of_mass(std::vector<T>& Mass,std::vector<double>& Acoords,std::vector<double>& center_of_mass);
 void farthest_from_center(std::vector<double>& Acoords, std::vector<double> COM, double& max_dist);
-std::vector<Eigen::Vector3d> generateFaceVectors(double inradius);
+std::vector<Eigen::Vector3d> generateDodecaFaceVectors(double inradius);
+std::vector<Eigen::Vector3d> generateCubeFaceVectors(double inradius);
+
 public:
 std::vector<double> velocities;
 std::vector<double> forces;

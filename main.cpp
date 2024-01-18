@@ -14,7 +14,7 @@ parm data("test_prot.parm7");
 
 simulation small_probe(coords, data, 1, "test_prot");
 
-small_probe.update_coord(0.01, 1, 5);
+small_probe.update_coord(0.01, 100, 5);
 
 
 
