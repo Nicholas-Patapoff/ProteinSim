@@ -13,6 +13,7 @@
 #include <eigen3/Eigen/Dense>
 
 
+
 simulation::simulation(Environment& temp1, parm& temp2, double step, std::string export_name){
 
     coord = std::make_unique<Environment>(temp1);
@@ -110,7 +111,6 @@ void simulation::update_coord(double step_size, int frames, int export_step){
     find_excluded(NEA.size(), excluded, NEA, EAL);
     // INIT EXCLUSION LIST
 
-
     //INIT BOX PARAMETERS
     std::vector<double> COM;
     //find center of mass
@@ -124,23 +124,61 @@ void simulation::update_coord(double step_size, int frames, int export_step){
 
     //generate face vectors 
 
-    std::vector<std::vector<int>> vec(insphereR * insphereR * insphereR);
-
+    std::vector<std::vector<int>> cubed_hash(insphereR * insphereR * insphereR);
+    std::vector<std::vector<int>> atom_hash_locations;
     //propagate atoms into vector 
+    //need to move protien and unit_cell into a positive xyz axis
+    std::vector<int> shift(3);
+
+    double minx = 0, miny = 0, minz = 0; 
+
+    for(int i = 0; i < coord->Acoords.size(); i+= 3){
+        if(coord->Acoords[i + 0] < minx){
+            minx = coord->Acoords[i + 0];
+        }
+        if(coord->Acoords[i + 1] < miny){
+            miny = coord->Acoords[i + 1];
+        }
+        if(coord->Acoords[i + 2] < minz){
+            minz = coord->Acoords[i + 2];
+        }
+    }
+
+    minx = abs(minx);
+    miny = abs(miny);
+    minz = abs(minz);
 
 
-   
-    std::vector<Eigen::Vector3d> dodeca_faces = generateCubeFaceVectors(insphereR);
+    for(int i = 0; i < coord->Acoords.size(); i+= 3){
+        coord->Acoords[i + 0] += minx + 15;
+        coord->Acoords[i + 1] += miny + 15;
+        coord->Acoords[i + 2] += minz + 15;
+    }
+
+    
+
+    for(int i = 0; i < coord->Acoords.size(); i+= 3){
+        std::vector<int> temp;
+        temp.push_back((int)(coord->Acoords[i + 0]));
+        temp.push_back((int)(coord->Acoords[i + 1]));
+        temp.push_back((int)(coord->Acoords[i + 2]));
+        atom_hash_locations.push_back(temp);
+        std::cout << (int)coord->Acoords[i + 0] * (int)coord->Acoords[i + 1] * (int)coord->Acoords[i + 2] << std::endl;
+        cubed_hash[(int)coord->Acoords[i + 0] * (int)coord->Acoords[i + 1] * (int)coord->Acoords[i + 2]].push_back(i);
+        std::cout << i << " temp " << temp[0] << " " << temp[1] << " " << temp[2] << " cubed_hash " << cubed_hash[(int)coord->Acoords[i + 0] * (int)coord->Acoords[i + 1] * (int)coord->Acoords[i + 2]][0] << std::endl;
+    }
+
+   exit;
+    std::vector<Eigen::Vector3d> cube_faces = generateCubeFaceVectors(insphereR);
     //INIT BOX PARAMETERS
     
-    rehash(vec, insphereR);
     
     //INIT BOXED VECTORS
     //each vector will cover a 3d space and sort based on Z axis
     
 
 
-    
+
     int reorder_atoms_freq;
 
     if(step_size >= 0.01){
@@ -177,7 +215,8 @@ for(int i = 0; i <= frames; i++){
 }
 
 
-void rehash(std::vector<std::vector<int>>& vec, int insphereR, std::vector<int>&stuff ){
+void rehash(std::vector<std::vector<int>>& vec, int insphereR, std::vector<std::vector<int>>&stuff){
+
 
 
 }
