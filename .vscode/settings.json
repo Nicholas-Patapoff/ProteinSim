@@ -90,6 +90,8 @@
         "semaphore": "cpp",
         "stop_token": "cpp",
         "xlocmon": "cpp",
-        "xloctime": "cpp"
+        "xloctime": "cpp",
+        "map": "cpp",
+        "set": "cpp"
     }
 }

@@ -30,6 +30,8 @@ void center_of_mass(std::vector<T>& Mass,std::vector<double>& Acoords,std::vecto
 void farthest_from_center(std::vector<double>& Acoords, std::vector<double> COM, double& max_dist);
 std::vector<Eigen::Vector3d> generateDodecaFaceVectors(double inradius);
 std::vector<Eigen::Vector3d> generateCubeFaceVectors(double inradius);
+void rehash(std::vector<std::vector<int>>& atom_hash_locations, std::vector<std::vector<int>>& cubed_hash, int insphereR);
+int hash_alg(int x, int y, int z, int insphereR);
 
 public:
 std::vector<double> velocities;
@@ -48,7 +50,7 @@ void force_additions(std::vector<T>& BWoutH, std::vector<T>& BIH, std::vector<T>
 void VerletAlg(double& step, std::vector<T>& BWoutH, std::vector<T>& BIH, std::vector<T>& BForceC, std::vector<T>& BEQV, std::vector<T>& AWoutH,
  std::vector<T>& AIH,std::vector<T>& AForceC, std::vector<T>& AEQV, std::vector<T>& DincH, std::vector<T>& DWoutH, std::vector<T>& DForceC, 
  std::vector<T>& DPeriod , std::vector<T>& DPhase, std::vector<T>& SCEE_SF, std::vector<T>& SCNB_SF, std::vector<T>& LJAC, std::vector<T>& LJBC,std::vector<T>& ATI,
-  std::vector<T>& NBPIndex, std::vector<std::vector<int> >& excluded); 
+  std::vector<T>& NBPIndex, std::vector<std::vector<int> >& excluded, std::vector<std::vector<int>>& cubed_hash, std::vector<std::vector<int>>& atom_hash_locations); 
 void angle_force(int atom1, int atom2, int atom3, double k, double eq);
 void dihedral_force(int atom1, int atom2, int atom3, int atom4, double k, double period, double sceef, double scnbf, double phase);
 void LennardJ_force(int atom1, int atom2, double LJA, double LJB);

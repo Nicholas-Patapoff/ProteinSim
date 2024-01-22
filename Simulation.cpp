@@ -124,7 +124,7 @@ void simulation::update_coord(double step_size, int frames, int export_step){
 
     //generate face vectors 
 
-    std::vector<std::vector<int>> cubed_hash(insphereR * insphereR * insphereR);
+    std::vector<std::vector<int>> cubed_hash(pow((int)insphereR * 2, 3));
     std::vector<std::vector<int>> atom_hash_locations;
     //propagate atoms into vector 
     //need to move protien and unit_cell into a positive xyz axis
@@ -155,7 +155,12 @@ void simulation::update_coord(double step_size, int frames, int export_step){
         coord->Acoords[i + 2] += minz + 15;
     }
 
-    
+    //atoms 3d index (atomhashlocations) -> iter (atomhashlocations) into cubed_hash[index]
+    //propagate atoms into hashed arrays
+    //make new hash
+
+    insphereR = (int) insphereR * 2;
+
 
     for(int i = 0; i < coord->Acoords.size(); i+= 3){
         std::vector<int> temp;
@@ -163,12 +168,12 @@ void simulation::update_coord(double step_size, int frames, int export_step){
         temp.push_back((int)(coord->Acoords[i + 1]));
         temp.push_back((int)(coord->Acoords[i + 2]));
         atom_hash_locations.push_back(temp);
-        std::cout << (int)coord->Acoords[i + 0] * (int)coord->Acoords[i + 1] * (int)coord->Acoords[i + 2] << std::endl;
-        cubed_hash[(int)coord->Acoords[i + 0] * (int)coord->Acoords[i + 1] * (int)coord->Acoords[i + 2]].push_back(i);
-        std::cout << i << " temp " << temp[0] << " " << temp[1] << " " << temp[2] << " cubed_hash " << cubed_hash[(int)coord->Acoords[i + 0] * (int)coord->Acoords[i + 1] * (int)coord->Acoords[i + 2]][0] << std::endl;
+        
+        cubed_hash[hash_alg(temp[0], temp[1], temp[2], insphereR)].push_back(i / 3);
+
     }
 
-   exit;
+
     std::vector<Eigen::Vector3d> cube_faces = generateCubeFaceVectors(insphereR);
     //INIT BOX PARAMETERS
     
@@ -194,12 +199,12 @@ void simulation::update_coord(double step_size, int frames, int export_step){
 for(int i = 0; i <= frames; i++){
     //refresh atoms in box vectors every reorder_atoms_freq
     if(i % reorder_atoms_freq == 0 ){
-        reorder_atoms_freq;
+        rehash(atom_hash_locations, cubed_hash, (int) insphereR);
     }
         VerletAlg(step_size,  BWoutH,  BIH,  BForceC, BEQV,  AWoutH,
   AIH, AForceC, AEQV,  DincH,  DWoutH,  DForceC, 
  DPeriod ,  DPhase,  SCEE_SF,  SCNB_SF, LJAC,  LJBC, ATI,
- NBPIndex, excluded);
+ NBPIndex, excluded, cubed_hash, atom_hash_locations);
         
         if(i % export_step == 0) {
             std::cout<< (double) i / frames * 100 << "% complete!" << std::endl;
@@ -215,7 +220,35 @@ for(int i = 0; i <= frames; i++){
 }
 
 
-void rehash(std::vector<std::vector<int>>& vec, int insphereR, std::vector<std::vector<int>>&stuff){
+int simulation::hash_alg(int x, int y, int z, int insphereR){
+
+    return x + y * insphereR + z * pow(insphereR, 2);
+
+}
+
+
+void simulation::rehash(std::vector<std::vector<int>>& atom_hash_locations, std::vector<std::vector<int>>& cubed_hash, int insphereR){
+
+
+for(int i = 0; i < atom_hash_locations.size(); i++){
+    if(atom_hash_locations[i][0] != (int)coord->Acoords[3 * i + 0] || atom_hash_locations[i][1] != (int)coord->Acoords[3 * i + 1] || atom_hash_locations[i][2] != (int) coord->Acoords[3 * i + 2]){
+
+    int old_hash = hash_alg(atom_hash_locations[i][0], atom_hash_locations[i][1], atom_hash_locations[i][2], insphereR);
+
+    for(int index = 0; index < cubed_hash[old_hash].size(); index++){
+        if(cubed_hash[old_hash][index] = i){
+            cubed_hash[old_hash].erase(cubed_hash[old_hash].begin() + index);
+            atom_hash_locations[i][0] = (int)coord->Acoords[3 * i + 0];
+            atom_hash_locations[i][1] = (int)coord->Acoords[3 * i + 1];
+            atom_hash_locations[i][2] = (int)coord->Acoords[3 * i + 2];
+            cubed_hash[hash_alg(atom_hash_locations[i][0], atom_hash_locations[i][1], atom_hash_locations[i][2], insphereR)].push_back(i);
+            return;
+        }
+    }
+
+    }
+
+}
 
 
 
@@ -846,9 +879,11 @@ void simulation::theta_from_dot(int& atom1, int& atom2, int& atom3, double& thet
 void simulation::VerletAlg(double& step_size, std::vector<T>& BWoutH, std::vector<T>& BIH, std::vector<T>& BForceC, std::vector<T>& BEQV, std::vector<T>& AWoutH,
  std::vector<T>& AIH,std::vector<T>& AForceC, std::vector<T>& AEQV, std::vector<T>& DincH, std::vector<T>& DWoutH, std::vector<T>& DForceC, 
  std::vector<T>& DPeriod , std::vector<T>& DPhase, std::vector<T>& SCEE_SF, std::vector<T>& SCNB_SF, std::vector<T>& LJAC, std::vector<T>& LJBC,std::vector<T>& ATI,
-  std::vector<T>& NBPIndex, std::vector<std::vector<int> >& excluded){
+  std::vector<T>& NBPIndex, std::vector<std::vector<int> >& excluded, std::vector<std::vector<int>>& cubed_hash, std::vector<std::vector<int>>& atom_hash_locations){
     std::unordered_map<std::string, std::vector<T> >::iterator ms = top->values.find("MASS");
-        std::vector<T>& Mass = ms->second;
+    std::vector<T>& Mass = ms->second;
+
+
 
 for(int atom = 0; atom < velocities.size(); atom++){
     velocities[atom] = velocities[atom] + (forces[atom] * step_size/(2 * std::get<double>(Mass[atom/3])));
